@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Tela — Tech Design</title>
+<style>
+  :root {
+    --bg0:#121014; --bg1:#191619; --line:#282329; --text:#ede7df;
+    --muted:#8e8791; --faint:#5c5661; --amber:#d9a441;
+    --claude:#d97757; --codex:#56b6c2; --gemini:#7a87ff; --opencode:#58c08a;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+    --serif: "Newsreader", Georgia, serif;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg0); color:var(--text); font:15px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing:antialiased; }
+  main { max-width: 860px; margin:0 auto; padding: 64px 24px 96px; }
+  .eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); }
+  h1 { font-family:var(--serif); font-style:italic; font-weight:500; font-size:44px; line-height:1.1; margin:10px 0 8px; }
+  .sub { color:var(--muted); max-width:620px; margin-bottom:40px; }
+  h2 { font-family:var(--serif); font-style:italic; font-weight:500; font-size:26px; margin:52px 0 14px; }
+  p { margin: 10px 0; color:var(--text); opacity:.92; }
+  a { color:var(--codex); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  code { font-family:var(--mono); font-size:.88em; background:var(--bg1); border:1px solid var(--line); border-radius:5px; padding:1px 6px; }
+  pre { background:var(--bg1); border:1px solid var(--line); border-radius:12px; padding:18px; overflow-x:auto; font-family:var(--mono); font-size:12px; line-height:1.55; color:var(--muted); margin:16px 0; }
+  pre b { color:var(--text); font-weight:600; }
+  table { width:100%; border-collapse:collapse; margin:16px 0; font-size:13.5px; }
+  th, td { text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); font-weight:500; }
+  td:first-child { white-space:nowrap; color:var(--muted); }
+  .agents { display:flex; gap:10px; flex-wrap:wrap; margin:14px 0; }
+  .agent { font-family:var(--mono); font-size:12px; border:1px solid var(--line); border-radius:8px; padding:6px 12px; }
+  .agent.c { color:var(--claude); } .agent.x { color:var(--codex); }
+  .agent.g { color:var(--gemini); } .agent.o { color:var(--opencode); }
+  ul { padding-left: 20px; margin:10px 0; }
+  li { margin:6px 0; color:var(--text); opacity:.92; }
+  li::marker { color:var(--faint); }
+  .note { border-left:2px solid var(--amber); padding:2px 0 2px 14px; color:var(--muted); font-size:13.5px; margin:16px 0; }
+  footer { margin-top:64px; padding-top:16px; border-top:1px solid var(--line); font-family:var(--mono); font-size:11px; color:var(--faint); }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Tela · Tech design · 2026-07-15</div>
+  <h1>A collaboration layer for persistent AI workspaces.</h1>
+  <p class="sub">
+    Each workspace is a live coding agent running in tmux on an always-on VM. Multiple humans
+    attach to the same agent, watch the same bytes, steer it, and answer its approval prompts
+    together. Closing the browser never stops anything. Live at
+    <a href="https://tela-vm.web.app">tela-vm.web.app</a> (Altis SSO).
+  </p>
+
+  <div class="agents">
+    <span class="agent c">Claude Code</span>
+    <span class="agent x">Codex CLI</span>
+    <span class="agent g">Gemini CLI</span>
+    <span class="agent o">OpenCode</span>
+  </div>
+
+  <h2>Topology</h2>
+<pre>
+browser ──► <b>tela-vm.web.app</b>                Firebase Hosting (static SPA, no server code)
+              │  1· SSO gate (ros-user.js — same identity as every Altis tool)
+              ▼
+            <b>Research OS API</b>                Cloud Run · Google OAuth · issues + verifies tokens
+              │  2· pick a server (defaults + user-added; localStorage)
+              ▼
+            <b>server endpoint</b>                Caddy :443, auto-TLS (Let's Encrypt over sslip.io)
+              │  HTTPS / WSS                  runs unprivileged in tmux on the VM
+              ▼
+            <b>telad</b> 127.0.0.1:9200           Node 24 single-file bundle, loopback only
+              │  REST /api/* + WS /ws/&lt;id&gt;    auth: static access code OR verified ROS token
+              ▼
+            <b>tmux</b> sessions tela_&lt;slug&gt;      120×36 pinned · one control-mode client each
+            claude / codex / gemini / opencode working in real repos
+</pre>
+
+  <h2>Stack</h2>
+  <table>
+    <tr><th>Layer</th><th>Choice</th></tr>
+    <tr><td>Frontend</td><td>Vite + React + TS, zustand, xterm.js at fixed 120×36 (CSS-scaled); hand-rolled token CSS — Newsreader italic / IBM Plex Sans / JetBrains Mono, self-hosted</td></tr>
+    <tr><td>Hosting</td><td>Firebase Hosting (static SPA only, SPA rewrite)</td></tr>
+    <tr><td>App auth</td><td>Research-OS SSO widget; identity = ROS username, presence color = name hash</td></tr>
+    <tr><td>Server auth</td><td>Static access code <em>or</em> any valid ROS SSO token, verified server-side against the ROS API (15-min cache). No secrets in the public bundle.</td></tr>
+    <tr><td>Daemon</td><td><code>telad</code> — Node + TS, <code>ws</code>, no framework; esbuild single-file bundle; deploy = scp one file + restart a tmux session</td></tr>
+    <tr><td>Transport</td><td>tmux control-mode <code>%output</code> → octal-unescaped bytes → binary WS frames → xterm; capture-pane replay on join/reconnect</td></tr>
+    <tr><td>TLS</td><td>Caddy + Let's Encrypt on an sslip.io hostname — stable HTTPS/WSS with zero DNS setup, no tunnels</td></tr>
+    <tr><td>Persistence</td><td>JSON on the VM: workspace registry + per-workspace chat history (replayed to every joiner). The VM is the source of truth — no app database.</td></tr>
+  </table>
+
+  <h2>Collaboration mechanics</h2>
+  <ul>
+    <li><b>One geometry.</b> Every session is pinned 120×36 (<code>window-size manual</code>) — every participant sees byte-identical output; humans SSHing in can’t resize it out from under the room.</li>
+    <li><b>Attributed prompts.</b> Messages go through the daemon: injected into the TUI (with a bracketed-paste-safe Enter) and broadcast as chat events with author + color.</li>
+    <li><b>Approvals for everyone.</b> The daemon parses numbered agent dialogs from the screen (per-agent carets) and every participant gets clickable approve/deny buttons.</li>
+    <li><b>Permission modes.</b> For Claude workspaces the active mode (Manual / Accept edits / Plan / Auto / Bypass) is parsed live and shown as a <code>⇧⇥</code> pill — click to cycle via shift+tab; everyone sees it change.</li>
+    <li><b>Presence, interrupts, unread.</b> Join/leave toasts, header avatars, cross-window interrupt, unread-activity dots — all from real daemon events, nothing simulated.</li>
+    <li><b>Chat history.</b> Prompts, interrupts, joins/leaves persist per workspace (ET timestamps) and replay to anyone who joins later — a livestream chat for the agent’s room.</li>
+    <li><b>Deep scrollback.</b> tmux history 50k lines, full-history replay on join, 50k xterm scrollback.</li>
+    <li><b>Workspaces from the web.</b> Any signed-in user creates one: name + agent + repo path on the server (allowlisted roots); first-run dialogs are answerable from the approval bar.</li>
+  </ul>
+
+  <h2>Trust model</h2>
+  <p>
+    The app is public static files; everything sensitive sits behind the daemon. Any Altis SSO
+    user can connect to any Tela server that trusts Research OS; non-SSO collaborators use that
+    server’s access code. Participants are collaborators by design — connected users have full
+    agent control. Agent API keys live only on the VM.
+  </p>
+
+  <div class="note">
+    Known limits: the VM endpoint rides on an ephemeral IP (a stop/start means updating one
+    JSON file + redeploying hosting); chat history travels with the server, not the user;
+    dynamic terminal resize is deliberately out of scope.
+  </div>
+
+  <footer>tela · sg-altis · generated 2026-07-15 · source of truth: tela-vm repo, docs/DESIGN.md</footer>
+</main>
+</body>
+</html>
