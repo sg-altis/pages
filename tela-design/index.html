@@ -98,7 +98,7 @@ browser ──► <b>tela-vm.web.app</b>                Firebase Hosting (static
     <li><b>Permission modes.</b> For Claude workspaces the active mode (Manual / Accept edits / Plan / Auto / Bypass) is parsed live and shown as a <code>⇧⇥</code> pill — click to cycle via shift+tab; everyone sees it change.</li>
     <li><b>Presence, interrupts, unread.</b> Join/leave toasts, header avatars, cross-window interrupt, unread-activity dots — all from real daemon events, nothing simulated.</li>
     <li><b>Chat history.</b> Prompts, interrupts, joins/leaves persist per workspace (ET timestamps) and replay to anyone who joins later — a livestream chat for the agent’s room.</li>
-    <li><b>Deep scrollback.</b> tmux history 50k lines, full-history replay on join, 50k xterm scrollback.</li>
+    <li><b>Scrolling that actually works.</b> Two paths, picked automatically: Codex/Gemini flow output into tmux history — 50k-line replay on join, local wheel. Claude Code/OpenCode repaint an internal transcript that never touches the terminal, so the wheel is forwarded to the agent as synthetic mouse events and it scrolls its own transcript — live for every participant.</li>
     <li><b>Workspaces from the web.</b> Any signed-in user creates one: name + agent + repo path on the server (allowlisted roots); first-run dialogs are answerable from the approval bar.</li>
   </ul>
 
