@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Automation Audit — Claude Routines &amp; Triggers · 2026-07-14</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1a1a1a; --muted: #6b7280; --line: #e5e7eb;
+    --card: #f9fafb; --accent: #b45309; --accent-bg: #fffbeb;
+    --t1: #b91c1c; --t1-bg: #fef2f2; --t2: #b45309; --t2-bg: #fffbeb; --t3: #1d4ed8; --t3-bg: #eff6ff;
+    --ok: #15803d; --ok-bg: #f0fdf4; --warn: #b91c1c; --warn-bg: #fef2f2;
+    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #101014; --fg: #e7e7ea; --muted: #9ca3af; --line: #2a2a32;
+      --card: #17171d; --accent: #fbbf24; --accent-bg: #2a2213;
+      --t1: #f87171; --t1-bg: #2a1515; --t2: #fbbf24; --t2-bg: #2a2213; --t3: #93c5fd; --t3-bg: #14203a;
+      --ok: #4ade80; --ok-bg: #12261a; --warn: #f87171; --warn-bg: #2a1515;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
+  h1 { font-size: 1.7rem; margin: 0 0 .25rem; }
+  h2 { font-size: 1.25rem; margin: 2.75rem 0 .75rem; border-bottom: 1px solid var(--line); padding-bottom: .35rem; }
+  h3 { font-size: 1.02rem; margin: 1.5rem 0 .5rem; }
+  .sub { color: var(--muted); margin-bottom: 2rem; }
+  table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+  .scroll { overflow-x: auto; }
+  th, td { text-align: left; padding: .5rem .65rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  code { font-family: var(--mono); font-size: .84em; background: var(--card); border: 1px solid var(--line);
+         border-radius: 4px; padding: .08em .35em; }
+  pre { background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+        padding: 1rem; overflow-x: auto; font-family: var(--mono); font-size: .8rem; line-height: 1.45; }
+  .pill { display: inline-block; font-size: .72rem; font-weight: 600; border-radius: 99px; padding: .1em .6em; white-space: nowrap; }
+  .p1 { color: var(--t1); background: var(--t1-bg); }
+  .p2 { color: var(--t2); background: var(--t2-bg); }
+  .p3 { color: var(--t3); background: var(--t3-bg); }
+  .ok { color: var(--ok); background: var(--ok-bg); }
+  .warn { color: var(--warn); background: var(--warn-bg); }
+  .note { background: var(--accent-bg); border-left: 3px solid var(--accent); padding: .75rem 1rem; border-radius: 0 8px 8px 0; margin: 1rem 0; font-size: .9rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: .75rem; margin: 1rem 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: .9rem 1rem; }
+  .card b { display: block; margin-bottom: .3rem; }
+  .card p { margin: 0; font-size: .86rem; color: var(--muted); }
+  footer { margin-top: 4rem; color: var(--muted); font-size: .8rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Automation Audit — Claude Routines &amp; Triggers</h1>
+<div class="sub">Scan of ~70 repos + the meta-wiki · July 14, 2026 · verdict: <b>5 routines to create now, 4 laptop crons to migrate, 6 weekly sweeps to add</b></div>
+
+<h2>1 · Where automation runs today</h2>
+<div class="scroll"><table>
+<tr><th>Runner</th><th>Jobs</th><th>Durability</th></tr>
+<tr><td><b>claude.ai cloud routines</b> (altis-crons env)</td><td>tech-wiki-reconcile (M/W/F eve) · kg-reconcile (nightly)</td><td><span class="pill ok">durable</span></td></tr>
+<tr><td><b>GCP Cloud Scheduler</b></td><td>loop-daily 5:17am ET · 2× call-infra sweepers (30-min offset pair) · website smoke</td><td><span class="pill ok">durable</span></td></tr>
+<tr><td><b>GitHub Actions cron</b></td><td>uptime probe (5-min) · survey nudges (3×/wk-day) · podcasts ×3 · SPV scan 4×/day</td><td><span class="pill ok">durable</span></td></tr>
+<tr><td><b>Supabase pg_cron</b></td><td>credit-expiry sweep (15-min)</td><td><span class="pill ok">durable</span></td></tr>
+<tr><td><b>Laptop launchd / local cron</b></td><td>AEO scan (2-day) · GTM nightly agents (teammate laptop) · expert-scout · wiki pulls</td><td><span class="pill warn">dies with lid</span></td></tr>
+<tr><td><b>Session-scoped Claude cron</b></td><td>5:52am Loop audit — <b>expires ~Jul 19</b></td><td><span class="pill warn">dies with session</span></td></tr>
+<tr><td><b>Event-driven</b></td><td>email-ingest webhook · booking webhooks · notes push→re-embed · @claude mentions + auto PR review (research-os only)</td><td><span class="pill ok">durable</span></td></tr>
+</table></div>
+
+<div class="note">Two structural weaknesses: (1) anything on a laptop stops when the lid closes — four jobs live there today; (2) the one session-scoped Claude cron guards production Loop output and expires in ~5 days. Both fix cleanly with cloud routines. Your own monitor doctrine already says: never session-scoped crons for production.</div>
+
+<h2>2 · Verdict — routines to create</h2>
+
+<h3>Tier 1 · this week (skills already exist, explicit TODOs)</h3>
+<div class="scroll"><table>
+<tr><th></th><th>Routine</th><th>Schedule (ET / UTC cron)</th><th>What it does</th><th>Why now</th></tr>
+<tr><td><span class="pill p1">P1</span></td><td><b>loop-audit-daily</b></td><td>6:00am · <code>0 10 * * *</code></td><td>Runs <code>/loop-cron-audit</code>: did the 5:17 job fire, is the pipeline healthy, is what reached the alerts channel junk-free. Fold in the 36-hour scan heartbeat (alert if no completed scan).</td><td>The session cron doing this <b>expires ~Jul 19</b>; TODO explicitly says move to cloud.</td></tr>
+<tr><td><span class="pill p1">P1</span></td><td><b>altis-smoketest-daily</b></td><td>7:00am · <code>0 11 * * *</code></td><td>Runs <code>/altis-smoketest</code> across prod services; Slack only on failure. Catches overnight breakage before the team is online.</td><td>Post-deploy verification is manual almost everywhere today.</td></tr>
+<tr><td><span class="pill p1">P1</span></td><td><b>altis-funnel-weekly</b></td><td>Mon 8:00am · <code>0 12 * * 1</code></td><td>Runs <code>/altis-funnel</code>: who's about to hit credit gates or the Calendly wall → Monday-morning Slack digest for outreach prioritization.</td><td>Skill exists but only fires when you remember to run it.</td></tr>
+<tr><td><span class="pill p1">P1</span></td><td><b>pdfjs-closeout</b> (one-off)</td><td>Sat Jul 19 · <code>run_once_at</code></td><td>Verify the retired host's cache is actually dead; report leftover close-out chores to Slack.</td><td>Dated TODO with a deadline — a perfect <code>run_once_at</code>.</td></tr>
+</table></div>
+
+<h3>Tier 2 · migrate laptop-bound jobs to altis-crons</h3>
+<div class="scroll"><table>
+<tr><th></th><th>Routine</th><th>Schedule</th><th>Notes</th></tr>
+<tr><td><span class="pill p2">P2</span></td><td><b>aeo-scan</b></td><td>every 2 days, 9am ET</td><td>Today a laptop launchd job: scan → Firebase deploy → Slack. Cloud routine needs deploy credentials in the environment (or have it open a PR and let CI deploy).</td></tr>
+<tr><td><span class="pill p2">P2</span></td><td><b>gtm-nightly</b></td><td>nightly 9pm ET · <code>0 1 * * *</code></td><td>The GTM nightly digest/decay agents run on a teammate's laptop cron with no CI. Moving them to altis-crons removes the single-laptop dependency for a team-facing digest.</td></tr>
+<tr><td><span class="pill p2">P2</span></td><td><b>notes-slack-ingest</b></td><td>daily</td><td>Wiki literally says this "isn't running regularly — consider scheduling."</td></tr>
+<tr><td><span class="pill p2">P2</span></td><td><b>thesis-scout</b></td><td>daily — or retire</td><td>Alpha-ledger daily scout has no commits in 2 months. Decide: revive as a routine or archive; zombie automations erode trust in the rest.</td></tr>
+</table></div>
+
+<h3>Tier 3 · weekly data-quality sweeps</h3>
+<div class="scroll"><table>
+<tr><th></th><th>Routine</th><th>Schedule</th><th>What it does</th></tr>
+<tr><td><span class="pill p3">P3</span></td><td><b>ingest-janitor-daily</b></td><td>daily 7am ET</td><td>tx-dash TODOs ask for this twice: find assets stuck pending &gt;1h, stalled sanitization jobs, survey gaps → triage report to Slack (read-only; fixes stay human-approved per your Supabase write rule).</td></tr>
+<tr><td><span class="pill p3">P3</span></td><td><b>tellus-dq-weekly</b></td><td>Fri 3pm ET</td><td><code>tellus audit</code> data-quality report: dup companies, off-vocab sectors → Slack digest.</td></tr>
+<tr><td><span class="pill p3">P3</span></td><td><b>credits-drift-weekly</b></td><td>Mon 7am ET</td><td>The "periodic sanity" SQL from web-v2 (credit ledger drift), plus the pg_cron sweep's own health.</td></tr>
+<tr><td><span class="pill p3">P3</span></td><td><b>research-feedback-weekly</b></td><td>Fri 4pm ET</td><td>research-os TODO wants exactly this: weekly digest of rejected findings + why.</td></tr>
+<tr><td><span class="pill p3">P3</span></td><td><b>wiki-deep-scan-monthly</b></td><td>1st of month</td><td>Rotate <code>/wiki-deep-scan</code> through the 2–3 stalest project pages instead of waiting for quarterly memory.</td></tr>
+<tr><td><span class="pill p3">P3</span></td><td><b>the-tool-sync-check</b></td><td>daily 7am ET</td><td><code>check_lucky_sync</code> + <code>check_vault_sync</code> — docs say "run before any review cycle"; a morning run means they're always fresh.</td></tr>
+</table></div>
+
+<h2>3 · Trigger-based (not cron)</h2>
+<div class="grid">
+<div class="card"><b>Replicate the research-os GitHub Actions pair</b><p>@claude mentions + automatic Claude PR review exist in exactly one repo. Copy <code>claude.yml</code> + <code>claude-code-review.yml</code> to tx-dash, call-infra, monitor, the-tool — the four repos with real deploy surface.</p></div>
+<div class="card"><b>Post-deploy verify on prod deploys</b><p>tx-dash staging is the only auto-verified deploy. Add a <code>workflow_run</code> job after prod deploys that runs the e2e smoke and pings Slack on failure — the cloud equivalent of /tx-e2e-verify and /altis-smoketest.</p></div>
+<div class="card"><b>Pre-Loop health gate</b><p>monitor TODO wants goldens + anchor capture before each 5:17 run. Cheapest as a step inside the Cloud Run Job itself, not a separate routine — flagging so it doesn't get cron'd unnecessarily.</p></div>
+<div class="card"><b>One-off reminders via run_once_at</b><p>Hiring take-home walkthroughs (24h-before prep), quarterly acquired-entity re-checks, "verify X by date" chores — cheap disposable routines instead of calendar todos.</p></div>
+</div>
+
+<h2>4 · Constraints to plan around</h2>
+<ul>
+<li><b>1-hour minimum interval</b> on cloud routines — sub-hourly sweeps (stuck-asset recovery at 30-min) belong in Cloud Scheduler/pg_cron like the existing sweepers; Claude routines are for the judgment layer on top.</li>
+<li><b>Connected MCP connectors are Slack and Ramp only.</b> Routines needing Supabase must go through repo-based access (SQL over API with keys provisioned in the altis-crons environment) or you connect the Supabase MCP connector first.</li>
+<li><b>Cloud agents can't see the laptop.</b> Anything migrating off launchd must get its inputs from git, APIs, or MCP — the kg-reconcile pattern (fresh clone of main, prompt = skill name) is the proven template.</li>
+<li><b>Crons are UTC</b> — the ET times above shift by an hour when DST ends in November.</li>
+<li><b>Keep the write-approval doctrine:</b> report-and-propose routines (janitor, DQ sweeps) should stay read-only; destructive fixes go through PRs or human approval, consistent with the existing Supabase write rule.</li>
+</ul>
+
+<h2>5 · Suggested order</h2>
+<pre>
+week of Jul 14   loop-audit-daily          ← beats the Jul 19 session-cron expiry
+                 pdfjs-closeout (one-off)
+                 altis-smoketest-daily
+                 altis-funnel-weekly
+week of Jul 21   aeo-scan + gtm-nightly + notes-slack-ingest   (laptop exodus)
+                 decide thesis-scout: revive or archive
+week of Jul 28   ingest-janitor-daily + tellus-dq-weekly
+                 copy claude.yml / claude-code-review.yml to 4 repos
+then             remaining Tier-3 sweeps as they prove useful
+</pre>
+
+<footer>Generated by Claude Code · scan of ~/git-repos (70 repos) and the meta-wiki · 2026-07-14 · Existing routines and schedules verified against the live claude.ai routines API.</footer>
+
+</main>
+</body>
+</html>
