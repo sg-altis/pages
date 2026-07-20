@@ -5,47 +5,123 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Tela — Tech Design</title>
+<script>if(localStorage.getItem('pages-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
 <style>
   :root {
-    --bg0:#121014; --bg1:#191619; --line:#282329; --text:#ede7df;
-    --muted:#8e8791; --faint:#5c5661; --amber:#d9a441;
-    --claude:#d97757; --codex:#56b6c2; --gemini:#7a87ff; --opencode:#58c08a;
-    --mono: ui-monospace, "SF Mono", Menlo, monospace;
-    --serif: "Newsreader", Georgia, serif;
+    --paper:#FBFAF7; --ink:#1A1A17; --graphite:#4C4942; --hairline:#E3E0D8;
+    --serif: Charter, "Bitstream Charter", "Source Serif 4", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, monospace;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --paper:#151412; --ink:#EBE9E3; --graphite:#AEAAA0; --hairline:#2E2C28;
+    color-scheme: dark;
   }
   * { box-sizing:border-box; margin:0; padding:0; }
-  body { background:var(--bg0); color:var(--text); font:15px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing:antialiased; }
-  main { max-width: 860px; margin:0 auto; padding: 64px 24px 96px; }
-  .eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); }
-  h1 { font-family:var(--serif); font-style:italic; font-weight:500; font-size:44px; line-height:1.1; margin:10px 0 8px; }
-  .sub { color:var(--muted); max-width:620px; margin-bottom:40px; }
-  h2 { font-family:var(--serif); font-style:italic; font-weight:500; font-size:26px; margin:52px 0 14px; }
-  p { margin: 10px 0; color:var(--text); opacity:.92; }
-  a { color:var(--codex); text-decoration:none; }
-  a:hover { text-decoration:underline; }
-  code { font-family:var(--mono); font-size:.88em; background:var(--bg1); border:1px solid var(--line); border-radius:5px; padding:1px 6px; }
-  pre { background:var(--bg1); border:1px solid var(--line); border-radius:12px; padding:18px; overflow-x:auto; font-family:var(--mono); font-size:12px; line-height:1.55; color:var(--muted); margin:16px 0; }
-  pre b { color:var(--text); font-weight:600; }
-  table { width:100%; border-collapse:collapse; margin:16px 0; font-size:13.5px; }
-  th, td { text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
-  th { font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); font-weight:500; }
-  td:first-child { white-space:nowrap; color:var(--muted); }
-  .agents { display:flex; gap:10px; flex-wrap:wrap; margin:14px 0; }
-  .agent { font-family:var(--mono); font-size:12px; border:1px solid var(--line); border-radius:8px; padding:6px 12px; }
-  .agent.c { color:var(--claude); } .agent.x { color:var(--codex); }
-  .agent.g { color:var(--gemini); } .agent.o { color:var(--opencode); }
-  ul { padding-left: 20px; margin:10px 0; }
-  li { margin:6px 0; color:var(--text); opacity:.92; }
-  li::marker { color:var(--faint); }
-  .note { border-left:2px solid var(--amber); padding:2px 0 2px 14px; color:var(--muted); font-size:13.5px; margin:16px 0; }
-  footer { margin-top:64px; padding-top:16px; border-top:1px solid var(--line); font-family:var(--mono); font-size:11px; color:var(--faint); }
+  html { scroll-behavior:smooth; }
+  body {
+    background:var(--paper); color:var(--ink);
+    font:16.5px/1.62 var(--serif); -webkit-font-smoothing:antialiased;
+  }
+  main { max-width:960px; margin:0 auto; padding:72px 28px 100px; }
+  ::selection { background:var(--ink); color:var(--paper); }
+
+  .mono { font-family:var(--mono); }
+  a { color:var(--ink); text-decoration:underline; text-decoration-color:var(--graphite); text-underline-offset:3px; }
+  a:hover { text-decoration-thickness:2px; }
+  strong, b { font-weight:700; }
+  em { font-style:normal; font-weight:600; }
+  code { font-family:var(--mono); font-size:.85em; color:var(--ink); overflow-wrap:anywhere; }
+
+  /* ---------- hero ---------- */
+  .kick { font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--graphite); }
+  h1 { font-size:clamp(36px, 5.5vw, 56px); font-weight:700; letter-spacing:-.02em; line-height:1.04; margin:16px 0 18px; }
+  .lede { color:var(--graphite); font-size:18px; line-height:1.55; max-width:640px; }
+  .lede a { color:var(--ink); }
+
+  /* ---------- agents row ---------- */
+  .agents { display:grid; grid-template-columns:repeat(4,1fr); border-top:2px solid var(--ink); margin:44px 0 0; }
+  .agent { padding:12px 20px 2px; border-left:1px solid var(--hairline); font-family:var(--mono); font-size:13px; font-weight:700; letter-spacing:.01em; }
+  .agent:first-child { border-left:none; padding-left:0; }
+  @media (max-width:640px){
+    .agents { grid-template-columns:repeat(2,1fr); }
+    .agent { padding-bottom:12px; }
+    .agent:nth-child(odd) { border-left:none; padding-left:0; }
+  }
+
+  /* ---------- theme toggle ---------- */
+  .theme { position:absolute; top:26px; right:28px; font-family:var(--mono); font-size:10px;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--graphite);
+    background:none; border:none; cursor:pointer; padding:4px 2px; }
+  .theme:hover { color:var(--ink); }
+  .theme::before { content:"◐ "; letter-spacing:0; }
+
+  /* ---------- toc rail ---------- */
+  .toc { display:none; position:fixed; top:88px; left:max(24px, calc(50vw - 694px)); width:186px;
+    font-family:var(--mono); font-size:11px; line-height:1.45; }
+  @media (min-width:1400px){ .toc { display:block; } }
+  .toc .tt { display:block; font-weight:700; letter-spacing:.04em; text-transform:uppercase; font-size:10px;
+    color:var(--ink); text-decoration:none; padding:0 0 10px 14px; }
+  .toc a.ti2 { display:block; color:var(--graphite); text-decoration:none; padding:5px 0 5px 14px;
+    border-left:1px solid var(--hairline); }
+  .toc a.ti2:hover { color:var(--ink); }
+  .toc a.ti2.on { color:var(--ink); font-weight:700; border-left:2px solid var(--ink); padding-left:13px; }
+  .toc .n { color:var(--graphite); opacity:.6; margin-right:6px; }
+
+  /* ---------- section header ---------- */
+  .sec { margin:76px 0 0; scroll-margin-top:24px; }
+  .sec-h { display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 14px; border-top:2px solid var(--ink); padding-top:14px; margin-bottom:18px; }
+  .sec-h .idx { font-family:var(--mono); font-size:11px; letter-spacing:.14em; color:var(--graphite); }
+  .sec-h h2 { font-size:22px; font-weight:700; letter-spacing:-.015em; }
+
+  /* ---------- prose ---------- */
+  p { margin:10px 0; max-width:680px; }
+  ul { padding-left:20px; margin:10px 0; max-width:680px; }
+  li { margin:8px 0; color:var(--graphite); line-height:1.6; }
+  li::marker { color:var(--graphite); }
+  li b { color:var(--ink); }
+
+  /* ---------- topology diagram ---------- */
+  pre { font-family:var(--mono); font-size:12px; line-height:1.55; color:var(--graphite);
+    margin:16px 0; overflow-x:auto; }
+  pre b { color:var(--ink); font-weight:700; }
+
+  /* ---------- stack table ---------- */
+  .tbl { overflow-x:auto; margin:16px 0; }
+  table { width:100%; border-collapse:collapse; font-size:14.5px; }
+  th, td { text-align:left; padding:10px 14px 10px 0; border-bottom:1px solid var(--hairline); vertical-align:top; }
+  th { font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--graphite); font-weight:600; border-bottom:2px solid var(--ink); }
+  td { color:var(--graphite); line-height:1.6; }
+  td b { color:var(--ink); }
+  td:first-child { font-family:var(--mono); font-size:12px; white-space:nowrap; color:var(--ink); font-weight:600; padding-right:20px; }
+
+  /* ---------- known limits ---------- */
+  .note { margin:26px 0 0; max-width:680px; font-size:14.5px; line-height:1.6; color:var(--graphite); }
+  .note::before { content:""; display:block; width:40px; height:2px; background:var(--ink); margin-bottom:12px; }
+
+  footer { margin-top:84px; padding-top:16px; border-top:2px solid var(--ink); font-family:var(--mono); font-size:11px; color:var(--graphite); line-height:1.95; overflow-wrap:anywhere; }
+
+  @media (max-width:560px){
+    main { padding:48px 20px 72px; }
+    .lede { font-size:17px; }
+    td:first-child { white-space:normal; }
+  }
 </style>
 </head>
 <body>
-<main>
-  <div class="eyebrow">Tela · Tech design · 2026-07-15</div>
+<button class="theme" aria-label="Toggle color theme">dark</button>
+<nav class="toc" aria-label="Contents">
+  <a class="tt" href="#top">Tela — Tech Design</a>
+  <a class="ti2" href="#s01"><span class="n">01</span>Topology</a>
+  <a class="ti2" href="#s02"><span class="n">02</span>Stack</a>
+  <a class="ti2" href="#s03"><span class="n">03</span>Collaboration mechanics</a>
+  <a class="ti2" href="#s04"><span class="n">04</span>Trust model</a>
+</nav>
+<main id="top">
+
+  <div class="kick">Tela · Tech design · 2026-07-15</div>
   <h1>A collaboration layer for persistent AI workspaces.</h1>
-  <p class="sub">
+  <p class="lede">
     Each workspace is a live coding agent running in tmux on an always-on VM. Multiple humans
     attach to the same agent, watch the same bytes, steer it, and answer its approval prompts
     together. Closing the browser never stops anything. Live at
@@ -53,13 +129,15 @@
   </p>
 
   <div class="agents">
-    <span class="agent c">Claude Code</span>
-    <span class="agent x">Codex CLI</span>
-    <span class="agent g">Gemini CLI</span>
-    <span class="agent o">OpenCode</span>
+    <span class="agent">Claude Code</span>
+    <span class="agent">Codex CLI</span>
+    <span class="agent">Gemini CLI</span>
+    <span class="agent">OpenCode</span>
   </div>
 
-  <h2>Topology</h2>
+  <!-- 01 TOPOLOGY -->
+  <section class="sec" id="s01">
+    <div class="sec-h"><span class="idx">01</span><h2>Topology</h2></div>
 <pre>
 browser ──► <b>tela-vm.web.app</b>                Firebase Hosting (static SPA, no server code)
               │  1· SSO gate (ros-user.js — same identity as every Altis tool)
@@ -76,47 +154,98 @@ browser ──► <b>tela-vm.web.app</b>                Firebase Hosting (static
             <b>tmux</b> sessions tela_&lt;slug&gt;      120×36 pinned · one control-mode client each
             claude / codex / gemini / opencode working in real repos
 </pre>
+  </section>
 
-  <h2>Stack</h2>
-  <table>
-    <tr><th>Layer</th><th>Choice</th></tr>
-    <tr><td>Frontend</td><td>Vite + React + TS, zustand, xterm.js at fixed 120×36 (CSS-scaled); hand-rolled token CSS — Newsreader italic / IBM Plex Sans / JetBrains Mono, self-hosted</td></tr>
-    <tr><td>Hosting</td><td>Firebase Hosting (static SPA only, SPA rewrite)</td></tr>
-    <tr><td>App auth</td><td>Research-OS SSO widget; identity = ROS username, presence color = name hash</td></tr>
-    <tr><td>Server auth</td><td>Static access code <em>or</em> any valid ROS SSO token, verified server-side against the ROS API (15-min cache). No secrets in the public bundle.</td></tr>
-    <tr><td>Daemon</td><td><code>telad</code> — Node + TS, <code>ws</code>, no framework; esbuild single-file bundle; deploy = scp one file + restart a tmux session</td></tr>
-    <tr><td>Transport</td><td>tmux control-mode <code>%output</code> → octal-unescaped bytes → binary WS frames → xterm; capture-pane replay on join/reconnect</td></tr>
-    <tr><td>TLS</td><td>Caddy + Let's Encrypt on an sslip.io hostname — stable HTTPS/WSS with zero DNS setup, no tunnels</td></tr>
-    <tr><td>Persistence</td><td>JSON on the VM: workspace registry + per-workspace chat history (replayed to every joiner). The VM is the source of truth — no app database.</td></tr>
-  </table>
+  <!-- 02 STACK -->
+  <section class="sec" id="s02">
+    <div class="sec-h"><span class="idx">02</span><h2>Stack</h2></div>
+    <div class="tbl">
+      <table>
+        <tr><th>Layer</th><th>Choice</th></tr>
+        <tr><td>Frontend</td><td>Vite + React + TS, zustand, xterm.js at fixed 120×36 (CSS-scaled); hand-rolled token CSS — Newsreader italic / IBM Plex Sans / JetBrains Mono, self-hosted</td></tr>
+        <tr><td>Hosting</td><td>Firebase Hosting (static SPA only, SPA rewrite)</td></tr>
+        <tr><td>App auth</td><td>Research-OS SSO widget; identity = ROS username, presence color = name hash</td></tr>
+        <tr><td>Server auth</td><td>Static access code <em>or</em> any valid ROS SSO token, verified server-side against the ROS API (15-min cache). No secrets in the public bundle.</td></tr>
+        <tr><td>Daemon</td><td><code>telad</code> — Node + TS, <code>ws</code>, no framework; esbuild single-file bundle; deploy = scp one file + restart a tmux session</td></tr>
+        <tr><td>Transport</td><td>tmux control-mode <code>%output</code> → octal-unescaped bytes → binary WS frames → xterm; capture-pane replay on join/reconnect</td></tr>
+        <tr><td>TLS</td><td>Caddy + Let's Encrypt on an sslip.io hostname — stable HTTPS/WSS with zero DNS setup, no tunnels</td></tr>
+        <tr><td>Persistence</td><td>JSON on the VM: workspace registry + per-workspace chat history (replayed to every joiner). The VM is the source of truth — no app database.</td></tr>
+      </table>
+    </div>
+  </section>
 
-  <h2>Collaboration mechanics</h2>
-  <ul>
-    <li><b>One geometry.</b> Every session is pinned 120×36 (<code>window-size manual</code>) — every participant sees byte-identical output; humans SSHing in can’t resize it out from under the room.</li>
-    <li><b>Attributed prompts.</b> Messages go through the daemon: injected into the TUI (with a bracketed-paste-safe Enter) and broadcast as chat events with author + color.</li>
-    <li><b>Approvals for everyone.</b> The daemon parses numbered agent dialogs from the screen (per-agent carets) and every participant gets clickable approve/deny buttons.</li>
-    <li><b>Permission modes.</b> For Claude workspaces the active mode (Manual / Accept edits / Plan / Auto / Bypass) is parsed live and shown as a <code>⇧⇥</code> pill — click to cycle via shift+tab; everyone sees it change.</li>
-    <li><b>Presence, interrupts, unread.</b> Join/leave toasts, header avatars, cross-window interrupt, unread-activity dots — all from real daemon events, nothing simulated.</li>
-    <li><b>Chat history.</b> Prompts, interrupts, joins/leaves persist per workspace (ET timestamps) and replay to anyone who joins later — a livestream chat for the agent’s room.</li>
-    <li><b>Scrolling that actually works.</b> Two paths, picked automatically: Codex/Gemini flow output into tmux history — 50k-line replay on join, local wheel. Claude Code/OpenCode repaint an internal transcript that never touches the terminal, so the wheel is forwarded to the agent as synthetic mouse events and it scrolls its own transcript — live for every participant.</li>
-    <li><b>Workspaces from the web.</b> Any signed-in user creates one: name + agent + repo path on the server (allowlisted roots); first-run dialogs are answerable from the approval bar.</li>
-  </ul>
+  <!-- 03 COLLABORATION MECHANICS -->
+  <section class="sec" id="s03">
+    <div class="sec-h"><span class="idx">03</span><h2>Collaboration mechanics</h2></div>
+    <ul>
+      <li><b>One geometry.</b> Every session is pinned 120×36 (<code>window-size manual</code>) — every participant sees byte-identical output; humans SSHing in can’t resize it out from under the room.</li>
+      <li><b>Attributed prompts.</b> Messages go through the daemon: injected into the TUI (with a bracketed-paste-safe Enter) and broadcast as chat events with author + color.</li>
+      <li><b>Approvals for everyone.</b> The daemon parses numbered agent dialogs from the screen (per-agent carets) and every participant gets clickable approve/deny buttons.</li>
+      <li><b>Permission modes.</b> For Claude workspaces the active mode (Manual / Accept edits / Plan / Auto / Bypass) is parsed live and shown as a <code>⇧⇥</code> pill — click to cycle via shift+tab; everyone sees it change.</li>
+      <li><b>Presence, interrupts, unread.</b> Join/leave toasts, header avatars, cross-window interrupt, unread-activity dots — all from real daemon events, nothing simulated.</li>
+      <li><b>Chat history.</b> Prompts, interrupts, joins/leaves persist per workspace (ET timestamps) and replay to anyone who joins later — a livestream chat for the agent’s room.</li>
+      <li><b>Scrolling that actually works.</b> Two paths, picked automatically: Codex/Gemini flow output into tmux history — 50k-line replay on join, local wheel. Claude Code/OpenCode repaint an internal transcript that never touches the terminal, so the wheel is forwarded to the agent as synthetic mouse events and it scrolls its own transcript — live for every participant.</li>
+      <li><b>Workspaces from the web.</b> Any signed-in user creates one: name + agent + repo path on the server (allowlisted roots); first-run dialogs are answerable from the approval bar.</li>
+    </ul>
+  </section>
 
-  <h2>Trust model</h2>
-  <p>
-    The app is public static files; everything sensitive sits behind the daemon. Any Altis SSO
-    user can connect to any Tela server that trusts Research OS; non-SSO collaborators use that
-    server’s access code. Participants are collaborators by design — connected users have full
-    agent control. Agent API keys live only on the VM.
-  </p>
+  <!-- 04 TRUST MODEL -->
+  <section class="sec" id="s04">
+    <div class="sec-h"><span class="idx">04</span><h2>Trust model</h2></div>
+    <p>
+      The app is public static files; everything sensitive sits behind the daemon. Any Altis SSO
+      user can connect to any Tela server that trusts Research OS; non-SSO collaborators use that
+      server’s access code. Participants are collaborators by design — connected users have full
+      agent control. Agent API keys live only on the VM.
+    </p>
 
-  <div class="note">
-    Known limits: the VM endpoint rides on an ephemeral IP (a stop/start means updating one
-    JSON file + redeploying hosting); chat history travels with the server, not the user;
-    dynamic terminal resize is deliberately out of scope.
-  </div>
+    <div class="note">
+      Known limits: the VM endpoint rides on an ephemeral IP (a stop/start means updating one
+      JSON file + redeploying hosting); chat history travels with the server, not the user;
+      dynamic terminal resize is deliberately out of scope.
+    </div>
+  </section>
 
-  <footer>tela · sg-altis · generated 2026-07-15 · source of truth: tela-vm repo, docs/DESIGN.md</footer>
+  <footer>
+    tela · sg-altis · generated 2026-07-15 · source of truth: tela-vm repo, docs/DESIGN.md<br>
+    <a href="../">← all pages</a>
+  </footer>
+
 </main>
+<script>
+(function(){
+  var links = [].slice.call(document.querySelectorAll('.toc a.ti2'));
+  if (!links.length) return;
+  var secs = links.map(function(a){ return document.getElementById(a.getAttribute('href').slice(1)); });
+  var ticking = false;
+  function spy(){
+    ticking = false;
+    var cur = -1;
+    for (var i = 0; i < secs.length; i++) {
+      if (secs[i] && secs[i].getBoundingClientRect().top <= 140) cur = i;
+    }
+    links.forEach(function(a, i){ a.classList.toggle('on', i === cur); });
+  }
+  document.addEventListener('scroll', function(){
+    if (!ticking) { ticking = true; requestAnimationFrame(spy); }
+  }, { passive: true });
+  spy();
+})();
+(function(){
+  var btn = document.querySelector('.theme');
+  if (!btn) return;
+  var root = document.documentElement;
+  function label(){ btn.textContent = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; }
+  btn.addEventListener('click', function(){
+    if (root.getAttribute('data-theme') === 'dark') {
+      root.removeAttribute('data-theme'); localStorage.removeItem('pages-theme');
+    } else {
+      root.setAttribute('data-theme','dark'); localStorage.setItem('pages-theme','dark');
+    }
+    label();
+  });
+  label();
+})();
+</script>
 </body>
 </html>

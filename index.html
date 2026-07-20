@@ -5,23 +5,74 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>sg-altis · pages</title>
+<script>if(localStorage.getItem('pages-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
 <style>
-  body { margin: 0; background: #101014; color: #e7e7ea; font: 16px/1.6 -apple-system, BlinkMacSystemFont, sans-serif; }
-  main { max-width: 640px; margin: 0 auto; padding: 4rem 1.5rem; }
-  a { color: #93c5fd; }
-  li { margin: .4rem 0; }
-  .d { color: #9ca3af; font-size: .85rem; }
+  :root {
+    --paper:#FBFAF7; --ink:#1A1A17; --graphite:#4C4942; --hairline:#E3E0D8;
+    --serif: Charter, "Bitstream Charter", "Source Serif 4", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, monospace;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --paper:#151412; --ink:#EBE9E3; --graphite:#AEAAA0; --hairline:#2E2C28;
+    color-scheme: dark;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--paper); color:var(--ink); font:16.5px/1.62 var(--serif); -webkit-font-smoothing:antialiased; }
+  main { max-width:640px; margin:0 auto; padding:72px 24px 100px; }
+  ::selection { background:var(--ink); color:var(--paper); }
+  a { color:var(--ink); text-decoration:underline; text-decoration-color:var(--graphite); text-underline-offset:3px; }
+  a:hover { text-decoration-thickness:2px; }
+
+  .theme { position:absolute; top:26px; right:28px; font-family:var(--mono); font-size:10px;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--graphite);
+    background:none; border:none; cursor:pointer; padding:4px 2px; }
+  .theme:hover { color:var(--ink); }
+  .theme::before { content:"◐ "; letter-spacing:0; }
+
+  .kick { font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--graphite); }
+  h1 { font-size:clamp(30px, 5vw, 40px); font-weight:700; letter-spacing:-.02em; margin:12px 0 28px; }
+
+  ul { list-style:none; border-top:2px solid var(--ink); }
+  li { display:flex; align-items:baseline; justify-content:space-between; gap:8px 20px; flex-wrap:wrap;
+    padding:14px 0; border-bottom:1px solid var(--hairline); }
+  li a { font-weight:700; }
+  .d { font-family:var(--mono); font-size:11px; color:var(--graphite); white-space:nowrap; }
+
+  footer { margin-top:64px; font-family:var(--mono); font-size:11px; color:var(--graphite); }
+
+  @media (max-width:560px){ main { padding:56px 20px 72px; } }
 </style>
 </head>
 <body>
+<button class="theme" aria-label="Toggle color theme">dark</button>
 <main>
-<h1>Pages</h1>
-<ul>
-  <li><a href="ribbon-voice-pipeline/">Voice Enrichment Loop — HubSpot × Supabase × Lemlist × ElevenLabs</a> <span class="d">2026-07-20</span></li>
-  <li><a href="altis-eval/">Altis Eval — Training-grade evals for diligence</a> <span class="d">2026-07-19</span></li>
-  <li><a href="tela-design/">Tela — Tech Design (persistent AI workspaces)</a> <span class="d">2026-07-15</span></li>
-  <li><a href="automation-audit/">Automation Audit — Claude Routines &amp; Triggers</a> <span class="d">2026-07-14</span></li>
-</ul>
+  <div class="kick">sg-altis</div>
+  <h1>Pages</h1>
+  <ul>
+    <li><a href="ribbon-voice-pipeline/">Voice Enrichment Loop — HubSpot × Supabase × Lemlist × ElevenLabs</a> <span class="d">2026-07-20</span></li>
+    <li><a href="altis-eval/">Altis Eval — Training-grade evals for diligence</a> <span class="d">2026-07-19</span></li>
+    <li><a href="tela-design/">Tela — Tech Design (persistent AI workspaces)</a> <span class="d">2026-07-15</span></li>
+    <li><a href="automation-audit/">Automation Audit — Claude Routines &amp; Triggers</a> <span class="d">2026-07-14</span></li>
+  </ul>
+  <footer>internal design notes · noindex</footer>
 </main>
+<script>
+(function(){
+  var btn = document.querySelector('.theme');
+  if (!btn) return;
+  var root = document.documentElement;
+  function label(){ btn.textContent = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; }
+  btn.addEventListener('click', function(){
+    if (root.getAttribute('data-theme') === 'dark') {
+      root.removeAttribute('data-theme'); localStorage.removeItem('pages-theme');
+    } else {
+      root.setAttribute('data-theme','dark'); localStorage.setItem('pages-theme','dark');
+    }
+    label();
+  });
+  label();
+})();
+</script>
 </body>
 </html>

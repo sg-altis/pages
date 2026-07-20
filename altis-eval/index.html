@@ -5,272 +5,394 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Altis Eval — Training-grade evals for diligence</title>
+<script>if(localStorage.getItem('pages-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
 <style>
   :root {
-    --bg0:#131110; --bg1:#1a1715; --bg2:#211d1a; --line:#2b2622; --line2:#3a332d;
-    --text:#ece5db; --muted:#948b80; --faint:#5f584f;
-    --gold:#d9a441; --green:#58c08a; --red:#d4655a; --blue:#8f9ee0; --cyan:#56b6c2; --plum:#c493cf;
-    --mono: ui-monospace, "SF Mono", Menlo, monospace;
-    --serif: "Newsreader", Georgia, serif;
+    --paper:#FBFAF7; --ink:#1A1A17; --graphite:#4C4942; --hairline:#E3E0D8;
+    --serif: Charter, "Bitstream Charter", "Source Serif 4", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, monospace;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --paper:#151412; --ink:#EBE9E3; --graphite:#AEAAA0; --hairline:#2E2C28;
+    color-scheme: dark;
   }
   * { box-sizing:border-box; margin:0; padding:0; }
-  body { background:var(--bg0); color:var(--text); font:15px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing:antialiased; }
-  main { max-width: 880px; margin:0 auto; padding: 64px 24px 96px; }
-  .eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); }
-  h1 { font-family:var(--serif); font-style:italic; font-weight:500; font-size:clamp(34px, 6vw, 46px); line-height:1.08; margin:10px 0 12px; }
-  .sub { color:var(--muted); max-width:640px; margin-bottom:8px; }
-  h2 { font-family:var(--serif); font-style:italic; font-weight:500; font-size:26px; margin:60px 0 6px; }
-  h2 .n { font-family:var(--mono); font-style:normal; font-size:12px; color:var(--faint); vertical-align:super; margin-right:8px; letter-spacing:.1em; }
-  .lede { color:var(--muted); font-size:13.5px; margin-bottom:18px; max-width:640px; }
-  p { margin:10px 0; opacity:.92; }
-  a { color:var(--cyan); text-decoration:none; }
-  a:hover { text-decoration:underline; }
-  code { font-family:var(--mono); font-size:.88em; background:var(--bg1); border:1px solid var(--line); border-radius:5px; padding:1px 6px; }
-  strong { color:var(--gold); font-weight:600; }
+  html { scroll-behavior:smooth; }
+  body {
+    background:var(--paper); color:var(--ink);
+    font:16.5px/1.62 var(--serif); -webkit-font-smoothing:antialiased;
+  }
+  main { max-width:960px; margin:0 auto; padding:72px 28px 100px; }
+  ::selection { background:var(--ink); color:var(--paper); }
 
-  /* headline finding */
-  .finding { border:1px solid var(--line2); border-radius:14px; padding:22px 24px; margin:36px 0 0; background:linear-gradient(180deg, var(--bg1), var(--bg0)); }
-  .finding .fx { font-family:var(--serif); font-style:italic; font-size:21px; line-height:1.35; }
-  .finding .fd { color:var(--muted); font-size:13.5px; margin-top:8px; }
-  .statrow { display:flex; flex-wrap:wrap; gap:8px 28px; margin-top:16px; padding-top:14px; border-top:1px solid var(--line); }
-  .stat { font-family:var(--mono); font-size:12px; color:var(--muted); }
-  .stat b { display:block; font-size:19px; color:var(--text); font-weight:600; letter-spacing:-.01em; }
+  .mono { font-family:var(--mono); }
+  a { color:var(--ink); text-decoration:underline; text-decoration-color:var(--graphite); text-underline-offset:3px; }
+  a:hover { text-decoration-thickness:2px; }
+  strong { font-weight:700; }
+  em { font-style:normal; font-weight:600; }
+  i { font-style:normal; }
+  code { font-family:var(--mono); font-size:.85em; color:var(--ink); }
 
-  /* signal map */
-  .map { display:grid; grid-template-columns: 1fr 26px 1fr 26px 1fr; gap:10px; align-items:stretch; margin:22px 0 6px; }
-  .col-h { font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); margin-bottom:2px; }
-  .cell { border:1px solid var(--line); border-radius:9px; padding:8px 12px; font-size:12.5px; color:var(--muted); background:var(--bg1); }
-  .cell b { color:var(--text); font-weight:600; display:block; font-size:12.5px; }
-  .cls { border-left-width:3px; }
-  .cls.c1 { border-left-color:var(--gold); }  .cls.c2 { border-left-color:var(--blue); }
-  .cls.c3 { border-left-color:var(--green); } .cls.c4 { border-left-color:var(--plum); }
-  .cls.c5 { border-left-color:var(--cyan); }
-  .cls .tier { font-family:var(--mono); font-size:10px; color:var(--faint); float:right; }
-  .arrow { align-self:center; color:var(--faint); text-align:center; font-family:var(--mono); font-size:14px; }
-  .sink { border:1px solid var(--line2); border-radius:9px; background:var(--bg2); padding:12px 14px; display:flex; flex-direction:column; justify-content:center; height:100%; }
-  .sink b { color:var(--text); }
-  .sink .g { font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:8px; line-height:1.6; }
-  .maprule { color:var(--muted); font-size:13.5px; border-left:2px solid var(--gold); padding:2px 0 2px 14px; margin:18px 0 0; max-width:640px; }
-  @media (max-width:680px) {
+  /* ---------- hero ---------- */
+  .kick { font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--graphite); }
+  h1 { font-size:clamp(36px, 5.5vw, 56px); font-weight:700; letter-spacing:-.02em; line-height:1.04; margin:16px 0 18px; }
+  .lede { color:var(--graphite); font-size:18px; line-height:1.55; max-width:640px; }
+  .thesis { margin:40px 0 0; font-size:19px; line-height:1.55; max-width:680px; }
+  .thesis::before { content:""; display:block; width:40px; height:2px; background:var(--ink); margin-bottom:16px; }
+  .thesis-d { color:var(--graphite); font-size:15px; line-height:1.6; max-width:660px; margin-top:10px; }
+
+  .stats { display:grid; grid-template-columns:repeat(5,1fr); border-top:2px solid var(--ink); margin:44px 0 0; }
+  .stat { padding:14px 16px 2px; border-left:1px solid var(--hairline); }
+  .stat:first-child { border-left:none; padding-left:0; }
+  .stat .v { font-family:var(--mono); font-size:27px; font-weight:500; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+  .stat .k { display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--graphite); margin-top:6px; line-height:1.5; }
+  @media (max-width:860px){
+    .stats { grid-template-columns:repeat(3,1fr); }
+    .stat { padding-bottom:12px; }
+    .stat:nth-child(3n+1) { border-left:none; padding-left:0; }
+  }
+  @media (max-width:560px){
+    .stats { grid-template-columns:repeat(2,1fr); }
+    .stat:nth-child(3n+1) { border-left:1px solid var(--hairline); padding-left:16px; }
+    .stat:nth-child(odd) { border-left:none; padding-left:0; }
+  }
+
+  /* ---------- theme toggle ---------- */
+  .theme { position:absolute; top:26px; right:28px; font-family:var(--mono); font-size:10px;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--graphite);
+    background:none; border:none; cursor:pointer; padding:4px 2px; }
+  .theme:hover { color:var(--ink); }
+  .theme::before { content:"◐ "; letter-spacing:0; }
+
+  /* ---------- toc rail ---------- */
+  .toc { display:none; position:fixed; top:88px; left:max(24px, calc(50vw - 694px)); width:186px;
+    font-family:var(--mono); font-size:11px; line-height:1.45; }
+  @media (min-width:1400px){ .toc { display:block; } }
+  .toc .tt { display:block; font-weight:700; letter-spacing:.04em; text-transform:uppercase; font-size:10px;
+    color:var(--ink); text-decoration:none; padding:0 0 10px 14px; }
+  .toc a.ti2 { display:block; color:var(--graphite); text-decoration:none; padding:5px 0 5px 14px;
+    border-left:1px solid var(--hairline); }
+  .toc a.ti2:hover { color:var(--ink); }
+  .toc a.ti2.on { color:var(--ink); font-weight:700; border-left:2px solid var(--ink); padding-left:13px; }
+  .toc .n { color:var(--graphite); opacity:.6; margin-right:6px; }
+
+  /* ---------- section header ---------- */
+  .sec { margin:76px 0 0; scroll-margin-top:24px; }
+  .sec-h { display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 14px; border-top:2px solid var(--ink); padding-top:14px; margin-bottom:18px; }
+  .sec-h .idx { font-family:var(--mono); font-size:11px; letter-spacing:.14em; color:var(--graphite); }
+  .sec-h h2 { font-size:22px; font-weight:700; letter-spacing:-.015em; }
+  .intro { color:var(--graphite); font-size:15.5px; max-width:660px; margin:0 0 26px; }
+  .intro strong { color:var(--ink); font-weight:700; }
+
+  /* ---------- signal map ---------- */
+  .map { display:grid; grid-template-columns:1fr 26px 1fr 26px 1fr; gap:10px 12px; align-items:stretch; margin:6px 0 0; }
+  .col-h { font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--graphite); margin-bottom:8px; }
+  .cell { border-top:1px solid var(--hairline); padding:9px 0 11px; font-family:var(--mono); font-size:11px; line-height:1.55; color:var(--graphite); }
+  .cell b { display:block; font-family:var(--serif); font-size:15px; font-weight:700; letter-spacing:-.01em; color:var(--ink); margin-bottom:2px; }
+  .tier { float:right; font-family:var(--mono); font-size:11px; color:var(--graphite); padding-left:8px; }
+  .arrow { align-self:center; color:var(--graphite); text-align:center; font-family:var(--mono); font-size:14px; }
+  .mcol.grow { display:flex; flex-direction:column; }
+  .sink { flex:1; display:flex; flex-direction:column; justify-content:center; background:var(--ink); color:var(--paper); padding:16px 18px; }
+  .sink b { font-family:var(--mono); font-size:13px; font-weight:700; }
+  .sink .g { font-family:var(--mono); font-size:11px; line-height:1.6; margin-top:8px; opacity:.85; }
+  .sink .g b { font-size:11px; }
+  .maprule { font-size:15.5px; line-height:1.6; color:var(--ink); margin:28px 0 0; max-width:640px; }
+  .maprule::before { content:""; display:block; width:40px; height:2px; background:var(--ink); margin-bottom:12px; }
+  @media (max-width:680px){
     .map { grid-template-columns:1fr; }
     .arrow { transform:rotate(90deg); padding:2px 0; }
   }
 
-  /* design cards */
-  .designs { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:20px 0 4px; }
+  /* ---------- design grid ---------- */
+  .designs { display:grid; grid-template-columns:1fr 1fr; column-gap:36px; row-gap:34px; margin:6px 0 0; }
   @media (max-width:760px){ .designs { grid-template-columns:1fr; } }
-  .card { border:1px solid var(--line); border-radius:14px; background:var(--bg1); padding:18px 20px 16px; display:flex; flex-direction:column; gap:10px; }
-  .card .top { display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
-  .lens { font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; }
-  .card h3 { font-family:var(--serif); font-style:italic; font-weight:500; font-size:20px; line-height:1.2; }
-  .card .task { font-size:13px; color:var(--muted); }
-  .rwd { font-family:var(--mono); font-size:11.5px; line-height:1.6; color:var(--text); background:var(--bg0); border:1px solid var(--line); border-radius:8px; padding:10px 12px; overflow-x:auto; white-space:nowrap; }
-  .rwd i { color:var(--faint); font-style:normal; }
-  .verdict { display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:11px; color:var(--muted); }
+  .des { border-top:2px solid var(--ink); padding-top:12px; display:flex; flex-direction:column; gap:10px; min-width:0; }
+  .des .top { display:flex; justify-content:space-between; align-items:baseline; gap:6px 10px; flex-wrap:wrap; }
+  .lens { font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--graphite); }
+  .des h3 { font-family:var(--serif); font-size:20px; font-weight:700; letter-spacing:-.01em; line-height:1.2; }
+  .des .task { font-size:14px; color:var(--graphite); line-height:1.6; }
+  .rwd { font-family:var(--mono); font-size:11.5px; line-height:1.6; color:var(--ink);
+    border-top:1px solid var(--hairline); border-bottom:1px solid var(--hairline);
+    padding:8px 0; overflow-x:auto; white-space:nowrap; }
+  .rwd i { color:var(--graphite); font-size:10px; }
+  .verdict { display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:11px; color:var(--graphite); }
   .pips { display:flex; gap:3px; }
-  .pip { width:9px; height:9px; border-radius:2px; background:var(--line2); }
-  .pip.on { background:var(--red); }
-  .pip.on.g { background:var(--green); }
-  .attack { font-size:12.5px; color:var(--muted); border-top:1px dashed var(--line); padding-top:10px; }
-  .attack b { font-weight:600; }
-  .atk b { color:var(--red); } .fix b { color:var(--green); }
+  .pip { width:8px; height:8px; background:var(--hairline); }
+  .pip.on { background:var(--ink); }
+  .attack { font-size:13.5px; color:var(--graphite); line-height:1.6; }
+  .attack b { color:var(--ink); font-weight:700; }
+  .attack b::before { font-family:var(--mono); font-weight:700; }
+  .atk b::before { content:"× "; }
+  .fix b::before { content:"+ "; }
 
-  /* near-miss number line */
-  .ruler { margin:22px 0 4px; }
-  .track { position:relative; height:5px; background:var(--line); border-radius:3px; margin:44px 8px 30px; }
-  .fill { position:absolute; left:0; top:0; bottom:0; width:76%; background:color-mix(in oklab, var(--red) 55%, var(--bg0)); border-radius:3px; }
-  .tick { position:absolute; top:-9px; width:2px; height:23px; }
-  .tick .lab { position:absolute; white-space:nowrap; font-family:var(--mono); font-size:11px; }
-  .tick.t1 { left:76%; background:var(--red); }
-  .tick.t1 .lab { bottom:26px; right:0; color:var(--red); text-align:right; }
-  .tick.t2 { left:90%; background:var(--green); }
-  .end { position:absolute; bottom:14px; font-family:var(--mono); font-size:10px; color:var(--faint); }
+  /* ---------- near-miss number line ---------- */
+  .ruler { margin:6px 0 0; }
+  .track { position:relative; height:4px; background:var(--hairline); margin:56px 8px 52px; }
+  .fill { position:absolute; left:0; top:0; bottom:0; width:76%; background:var(--graphite); }
+  .tick { position:absolute; top:-9px; width:2px; height:22px; background:var(--ink); }
+  .tick .lab { position:absolute; white-space:nowrap; font-family:var(--mono); font-size:11px; color:var(--graphite); line-height:1.4; }
+  .tick .lab b { display:block; font-size:13px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
+  .tick.t1 { left:76%; }
+  .tick.t1 .lab { bottom:26px; right:0; text-align:right; }
+  .tick.t2 { left:90%; }
+  .tick.t2 .lab { top:26px; left:0; }
+  .end { position:absolute; bottom:14px; font-family:var(--mono); font-size:10px; color:var(--graphite); font-variant-numeric:tabular-nums; }
   .end.l { left:0; } .end.r { right:0; }
-  .tick.t2 .lab { top:26px; left:0; color:var(--green); }
-  .tick .lab b { display:block; font-size:13px; }
-  .rulecap { font-size:12.5px; color:var(--muted); max-width:560px; }
+  .rulecap { font-size:14px; color:var(--graphite); line-height:1.6; max-width:560px; }
+  @media (max-width:560px){
+    .tick.t2 .lab { left:auto; right:0; text-align:right; }
+  }
 
-  /* red team numbers */
-  .rt { display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; margin-top:20px; }
+  /* ---------- red team numbers ---------- */
+  .rt { display:grid; grid-template-columns:repeat(3,1fr); column-gap:36px; row-gap:24px; margin-top:32px; }
   @media (max-width:760px){ .rt { grid-template-columns:1fr; } }
-  .rtcell { border-top:2px solid var(--red); padding-top:10px; }
-  .rtcell b { font-family:var(--mono); font-size:22px; font-weight:600; color:var(--text); letter-spacing:-.01em; }
-  .rtcell span { display:block; font-size:12.5px; color:var(--muted); margin-top:4px; }
+  .rtcell { border-top:2px solid var(--ink); padding-top:10px; }
+  .rtcell b { font-family:var(--mono); font-size:22px; font-weight:600; color:var(--ink); letter-spacing:-.01em; font-variant-numeric:tabular-nums; }
+  .rtcell span { display:block; font-size:13.5px; color:var(--graphite); line-height:1.6; margin-top:4px; }
 
-  /* sequence */
-  ol.seq { list-style:none; counter-reset:step; margin:20px 0 0; }
-  ol.seq li { counter-increment:step; display:grid; grid-template-columns:44px 1fr; gap:0 16px; padding:14px 0; border-top:1px solid var(--line); }
-  ol.seq li::before { content:counter(step, decimal-leading-zero); font-family:var(--mono); font-size:13px; color:var(--gold); padding-top:2px; }
-  ol.seq .when { font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); }
-  ol.seq b { font-family:var(--serif); font-style:italic; font-weight:500; font-size:17px; }
-  ol.seq p { font-size:13px; color:var(--muted); margin:4px 0 0; }
+  /* ---------- sequence ---------- */
+  ol.seq { list-style:none; counter-reset:step; margin:6px 0 0; }
+  ol.seq li { counter-increment:step; display:grid; grid-template-columns:44px 1fr; gap:0 16px; padding:14px 0; border-top:1px solid var(--hairline); }
+  ol.seq li:first-child { border-top:none; padding-top:0; }
+  ol.seq li::before { content:counter(step, decimal-leading-zero); font-family:var(--mono); font-size:13px; color:var(--graphite); font-variant-numeric:tabular-nums; padding-top:2px; }
+  ol.seq .when { font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--graphite); }
+  ol.seq b { font-family:var(--serif); font-size:17px; font-weight:700; letter-spacing:-.01em; }
+  ol.seq p { font-size:14px; color:var(--graphite); line-height:1.6; margin:4px 0 0; max-width:640px; }
 
-  /* checklist */
-  .check { columns:2; column-gap:36px; margin-top:18px; }
+  /* ---------- checklist ---------- */
+  .check { columns:2; column-gap:36px; margin-top:6px; list-style:none; }
   @media (max-width:720px){ .check { columns:1; } }
-  .check li { break-inside:avoid; list-style:none; font-size:13px; color:var(--muted); padding:7px 0 7px 26px; position:relative; }
-  .check li b { color:var(--text); font-weight:600; }
-  .check li::before { content:"✓"; position:absolute; left:2px; top:7px; color:var(--green); font-family:var(--mono); font-size:12px; }
+  .check li { break-inside:avoid; font-size:14px; color:var(--graphite); line-height:1.6; padding:7px 0 7px 26px; position:relative; }
+  .check li b { color:var(--ink); font-weight:700; }
+  .check li::before { content:"+"; position:absolute; left:2px; top:7px; color:var(--ink); font-family:var(--mono); font-size:12px; font-weight:700; }
 
-  footer { margin-top:72px; padding-top:16px; border-top:1px solid var(--line); font-family:var(--mono); font-size:11px; color:var(--faint); line-height:1.8; }
+  footer { margin-top:84px; padding-top:16px; border-top:2px solid var(--ink); font-family:var(--mono); font-size:11px; color:var(--graphite); line-height:1.95; overflow-wrap:anywhere; }
+
+  @media (max-width:560px){
+    main { padding:48px 20px 72px; }
+    .lede { font-size:17px; }
+    .thesis { font-size:18px; }
+  }
 </style>
 </head>
 <body>
-<main>
-  <div class="eyebrow">altis-eval · design round · 2026-07-19</div>
+<button class="theme" aria-label="Toggle color theme">dark</button>
+<nav class="toc" aria-label="Contents">
+  <a class="tt" href="#top">Altis Eval</a>
+  <a class="ti2" href="#s01"><span class="n">01</span>Five reward classes</a>
+  <a class="ti2" href="#s02"><span class="n">02</span>Four designs, four verdicts</a>
+  <a class="ti2" href="#s03"><span class="n">03</span>What the red team found</a>
+  <a class="ti2" href="#s04"><span class="n">04</span>The sequence</a>
+  <a class="ti2" href="#s05"><span class="n">05</span>Reward-design checklist</a>
+</nav>
+<main id="top">
+
+  <div class="kick">altis-eval · design round · 2026-07-19</div>
   <h1>Training-grade evals for private-market diligence.</h1>
-  <p class="sub">
+  <p class="lede">
     Four eval / reward-function designs grounded in Altis's real pipeline data, each independently
     red-teamed by a reward-hacking attacker and a feasibility auditor with live database access.
     The hard problem isn't the task — it's the <em>verifier</em>.
   </p>
 
-  <div class="finding">
-    <div class="fx">The harness already exists: <code>monitor/evals/</code> is an RLVR setup that nobody called one.</div>
-    <div class="fd">Loop's prompt-promotion machinery has everything an RL-with-verifiable-rewards loop needs — labeled cases, class weights, a promotion gate, a leaderboard, and deterministic cached scoring. Every design below reuses it.</div>
-    <div class="statrow">
-      <div class="stat"><b>1,288</b>labeled cases</div>
-      <div class="stat"><b>1 : 3 : 5</b>class weights</div>
-      <div class="stat"><b>52</b>leaderboard runs</div>
-      <div class="stat"><b>0.795</b>promotion floor</div>
-      <div class="stat"><b>22</b>adversarial corner cases</div>
-    </div>
+  <p class="thesis">The harness already exists: <code>monitor/evals/</code> is an RLVR setup that nobody called one.</p>
+  <p class="thesis-d">Loop's prompt-promotion machinery has everything an RL-with-verifiable-rewards loop needs — labeled cases, class weights, a promotion gate, a leaderboard, and deterministic cached scoring. Every design below reuses it.</p>
+
+  <div class="stats">
+    <div class="stat"><span class="v">1,288</span><span class="k">labeled cases</span></div>
+    <div class="stat"><span class="v">1 : 3 : 5</span><span class="k">class weights</span></div>
+    <div class="stat"><span class="v">52</span><span class="k">leaderboard runs</span></div>
+    <div class="stat"><span class="v">0.795</span><span class="k">promotion floor</span></div>
+    <div class="stat"><span class="v">22</span><span class="k">adversarial corner cases</span></div>
   </div>
 
-  <h2><span class="n">01</span>Five reward classes, all live today</h2>
-  <p class="lede">Diligence quality has no single ground truth — but the pipeline already records human judgment and outcomes at many points. Ordered by trustworthiness:</p>
+  <!-- 01 REWARD CLASSES -->
+  <section class="sec" id="s01">
+    <div class="sec-h"><span class="idx">01</span><h2>Five reward classes, all live today</h2></div>
+    <p class="intro">Diligence quality has no single ground truth — but the pipeline already records human judgment and outcomes at many points. Ordered by trustworthiness:</p>
 
-  <div class="map">
-    <div>
-      <div class="col-h">Signal sources</div>
-      <div class="cell" style="margin-bottom:8px"><b>Expert calls</b>4,288 transcripts · 340 primary</div>
-      <div class="cell" style="margin-bottom:8px"><b>Daily scanners</b>findings · echo clusters · audits</div>
-      <div class="cell" style="margin-bottom:8px"><b>Published reports</b>key debates · WMOBTD · metrics</div>
-      <div class="cell"><b>Provider APIs</b>models · metered token cost</div>
-    </div>
-    <div class="arrow">→</div>
-    <div>
-      <div class="col-h">Reward classes</div>
-      <div class="cell cls c1" style="margin-bottom:8px"><span class="tier">①</span><b>Human-label replay</b>1,299 materiality votes · accept/reject logs</div>
-      <div class="cell cls c2" style="margin-bottom:8px"><span class="tier">②</span><b>Frozen-clock backtest</b>post-T events resolve pre-T predictions</div>
-      <div class="cell cls c3" style="margin-bottom:8px"><span class="tier">③</span><b>Programmatic checks</b>citation ids · numeric regex · lints</div>
-      <div class="cell cls c4" style="margin-bottom:8px"><span class="tier">④</span><b>Anchored LLM judge</b>pinned · temp 0 · hashed · cached</div>
-      <div class="cell cls c5"><span class="tier">⑤</span><b>Live-API ground truth</b>/list-models · pricing · self-refreshing</div>
-    </div>
-    <div class="arrow">→</div>
-    <div>
-      <div class="col-h">Objective</div>
-      <div class="sink">
-        <b>R(rollout)</b>
-        <div class="g">
-          weighted components<br>
-          − danger penalties<br><br>
-          <b style="font-family:var(--mono); font-size:11px;">+ promotion gate</b><br>
-          recall floors · corner set<br>
-          ≥ frozen baseline
+    <div class="map">
+      <div class="mcol">
+        <div class="col-h">Signal sources</div>
+        <div class="cell"><b>Expert calls</b>4,288 transcripts · 340 primary</div>
+        <div class="cell"><b>Daily scanners</b>findings · echo clusters · audits</div>
+        <div class="cell"><b>Published reports</b>key debates · WMOBTD · metrics</div>
+        <div class="cell"><b>Provider APIs</b>models · metered token cost</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="mcol">
+        <div class="col-h">Reward classes</div>
+        <div class="cell"><span class="tier">①</span><b>Human-label replay</b>1,299 materiality votes · accept/reject logs</div>
+        <div class="cell"><span class="tier">②</span><b>Frozen-clock backtest</b>post-T events resolve pre-T predictions</div>
+        <div class="cell"><span class="tier">③</span><b>Programmatic checks</b>citation ids · numeric regex · lints</div>
+        <div class="cell"><span class="tier">④</span><b>Anchored LLM judge</b>pinned · temp 0 · hashed · cached</div>
+        <div class="cell"><span class="tier">⑤</span><b>Live-API ground truth</b>/list-models · pricing · self-refreshing</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="mcol grow">
+        <div class="col-h">Objective</div>
+        <div class="sink">
+          <b>R(rollout)</b>
+          <div class="g">
+            weighted components<br>
+            − danger penalties<br><br>
+            <b>+ promotion gate</b><br>
+            recall floors · corner set<br>
+            ≥ frozen baseline
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  <p class="maprule">Design rule from the red-teaming: a reward is only as strong as its weakest harvestable component. Compose ①–③ for the score; use ④ only for narrow, audited subtasks; use ⑤ to keep the eval fresh as the model zoo moves.</p>
+    <p class="maprule">Design rule from the red-teaming: a reward is only as strong as its weakest harvestable component. Compose ①–③ for the score; use ④ only for narrow, audited subtasks; use ⑤ to keep the eval fresh as the model zoo moves.</p>
+  </section>
 
-  <h2><span class="n">02</span>Four designs, four verdicts</h2>
-  <p class="lede">Every design came back <em>hackable-but-fixable</em> — none infeasible. Pips show red-team soundness (attacker + auditor consensus, 10 = tight).</p>
+  <!-- 02 DESIGNS -->
+  <section class="sec" id="s02">
+    <div class="sec-h"><span class="idx">02</span><h2>Four designs, four verdicts</h2></div>
+    <p class="intro">Every design came back <em>hackable-but-fixable</em> — none infeasible. Pips show red-team soundness (attacker + auditor consensus, 10 = tight).</p>
 
-  <div class="designs">
-    <div class="card">
-      <div class="top"><span class="lens" style="color:var(--gold)">① human-label replay</span>
-        <span class="verdict"><span class="pips"><span class="pip on g"></span><span class="pip on g"></span><span class="pip on g"></span><span class="pip on g"></span><span class="pip on g"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></span>5/10</span></div>
-      <h3>Loop Materiality Replay</h3>
-      <div class="task">Replay production triage: frozen finding + thesis context + 14-day echo block → score 1/2/3, echo flag, calibrated confidence. Scored against held-out human votes.</div>
-      <div class="rwd">R = .55·S<i>score</i> + .15·S<i>echo</i> + .15·S<i>cal</i> + .05·S<i>consist</i> + .10·S<i>concise</i> − P<i>miss</i></div>
-      <div class="attack atk"><b>Attack:</b> predicting all-1s scores 0.788 against the 0.795 floor — a keyword net closes the gap. Holdout had 33 votes, not 300.</div>
-      <div class="attack fix"><b>Fix:</b> label-accrual campaign incl. suppressed findings, per-class recall floors, 3-class Brier, private rotated corner set.</div>
+    <div class="designs">
+      <div class="des">
+        <div class="top"><span class="lens">① human-label replay</span>
+          <span class="verdict"><span class="pips"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></span>5/10</span></div>
+        <h3>Loop Materiality Replay</h3>
+        <div class="task">Replay production triage: frozen finding + thesis context + 14-day echo block → score 1/2/3, echo flag, calibrated confidence. Scored against held-out human votes.</div>
+        <div class="rwd">R = .55·S<i>score</i> + .15·S<i>echo</i> + .15·S<i>cal</i> + .05·S<i>consist</i> + .10·S<i>concise</i> − P<i>miss</i></div>
+        <div class="attack atk"><b>Attack:</b> predicting all-1s scores 0.788 against the 0.795 floor — a keyword net closes the gap. Holdout had 33 votes, not 300.</div>
+        <div class="attack fix"><b>Fix:</b> label-accrual campaign incl. suppressed findings, per-class recall floors, 3-class Brier, private rotated corner set.</div>
+      </div>
+
+      <div class="des">
+        <div class="top"><span class="lens">⑤ live-api ground truth</span>
+          <span class="verdict"><span class="pips"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></span>5/10</span></div>
+        <h3>Zoo-Router</h3>
+        <div class="task">The agent routes, it doesn't solve: task card + budget → model, effort, predicted quality &amp; cost. Regret vs a hidden oracle sweep; hallucinated model ids zero the episode.</div>
+        <div class="rwd">R = G<i>valid</i> × ( .65·R<i>route</i> + .20·R<i>lit</i> + .15·R<i>cal</i> )</div>
+        <div class="attack atk"><b>Attack:</b> 8 fixed budgets ≈ a 24-entry lookup table — RL memorizes it. Pricing isn't API-derivable; the repo's own table is 3 months stale.</div>
+        <div class="attack fix"><b>Fix:</b> continuous budgets, price perturbation with oracle recompute, tie-aware regret — and promote per-instance routing (1,288 free bandit instances) to primary.</div>
+      </div>
+
+      <div class="des">
+        <div class="top"><span class="lens">③+④ agentic end-to-end</span>
+          <span class="verdict"><span class="pips"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></span>6/10</span></div>
+        <h3>Day-0 Memo Gym</h3>
+        <div class="task">Frozen company snapshot at cutoff T, offline BM25 tools, ≤25 turns → cited first-look memo + 10 expert-call questions, scored against what analysts actually asked after T.</div>
+        <div class="rwd">R = .35·C<i>cite</i> + .30·C<i>cov</i> + .25·Q + .10·H&nbsp;&nbsp;<i>· fabricated cite ⇒ R ≤ 0.2</i></div>
+        <div class="attack atk"><b>Attack:</b> hedged quote-stitching maxes citations and rides a loose 0.60 cosine into coverage; question gold is parroted from the snapshot itself.</div>
+        <div class="attack fix"><b>Fix:</b> n-gram extraction penalty, uncited prose counts as failure, novelty filter on question gold, company-level splits, judge injection suite.</div>
+      </div>
+
+      <div class="des">
+        <div class="top"><span class="lens">② frozen-clock backtest</span>
+          <span class="verdict"><span class="pips"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></span>5/10</span></div>
+        <h3>Almanac</h3>
+        <div class="task">(company, freeze date T, 30d) → probabilities over 8 material-event types, Code-Red incidence, and key-debate movement — resolved by the post-T monitoring stream.</div>
+        <div class="rwd">R = .4·R<i>events</i> + .3·R<i>codered</i> + .3·R<i>debates</i>&nbsp;&nbsp;<i>· gate: BSS &gt; 0</i></div>
+        <div class="attack atk"><b>Attack:</b> rare events mean constant near-zero prediction earns ≈0.9; "always unresolved" harvests the debate term; article dates ≠ event dates (retrodiction).</div>
+        <div class="attack fix"><b>Fix:</b> train on skill-over-climatology, proper scoring on debates, snapshot mutable rows, extract event dates. Ship its by-product regardless: the Debate Resolution Ledger.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 RED TEAM -->
+  <section class="sec" id="s03">
+    <div class="sec-h"><span class="idx">03</span><h2>What the red team found</h2></div>
+    <p class="intro">The single most useful habit: <strong>compute the constant-policy score before writing any code.</strong></p>
+
+    <div class="ruler">
+      <div class="track">
+        <span class="end l">0.75</span><span class="end r">0.80</span>
+        <div class="fill"></div>
+        <div class="tick t1"><span class="lab"><b>× 0.788</b>predict "1" on everything</span></div>
+        <div class="tick t2"><span class="lab"><b>0.795</b>promotion floor</span></div>
+      </div>
+      <div class="rulecap">On a 93 / 5 / 2 label distribution, a policy that reads nothing and scores every finding a 1 lands 0.007 under the gate. A five-keyword net clears it. The learning signal lives almost entirely in the rare classes.</div>
     </div>
 
-    <div class="card">
-      <div class="top"><span class="lens" style="color:var(--cyan)">⑤ live-api ground truth</span>
-        <span class="verdict"><span class="pips"><span class="pip on g"></span><span class="pip on g"></span><span class="pip on g"></span><span class="pip on g"></span><span class="pip on g"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></span>5/10</span></div>
-      <h3>Zoo-Router</h3>
-      <div class="task">The agent routes, it doesn't solve: task card + budget → model, effort, predicted quality &amp; cost. Regret vs a hidden oracle sweep; hallucinated model ids zero the episode.</div>
-      <div class="rwd">R = G<i>valid</i> × ( .65·R<i>route</i> + .20·R<i>lit</i> + .15·R<i>cal</i> )</div>
-      <div class="attack atk"><b>Attack:</b> 8 fixed budgets ≈ a 24-entry lookup table — RL memorizes it. Pricing isn't API-derivable; the repo's own table is 3 months stale.</div>
-      <div class="attack fix"><b>Fix:</b> continuous budgets, price perturbation with oracle recompute, tie-aware regret — and promote per-instance routing (1,288 free bandit instances) to primary.</div>
+    <div class="rt">
+      <div class="rtcell"><b>33 votes</b><span>actual post-cutoff holdout, vs ~300 assumed — and only on <em>alerted</em> findings, so the misses you care most about are unobservable.</span></div>
+      <div class="rtcell"><b>88.7 → 79.8</b><span>prod exact-match when a <code>-latest</code> alias silently repointed models in May. Stale model knowledge is a live, measured failure mode.</span></div>
+      <div class="rtcell"><b>≤ 0.2</b><span>reward cap when any citation id doesn't exist in the corpus — the one gate every design shares, mirroring a real production failure class.</span></div>
     </div>
+  </section>
 
-    <div class="card">
-      <div class="top"><span class="lens" style="color:var(--green)">③+④ agentic end-to-end</span>
-        <span class="verdict"><span class="pips"><span class="pip on g"></span><span class="pip on g"></span><span class="pip on g"></span><span class="pip on g"></span><span class="pip on g"></span><span class="pip on g"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></span>6/10</span></div>
-      <h3>Day-0 Memo Gym</h3>
-      <div class="task">Frozen company snapshot at cutoff T, offline BM25 tools, ≤25 turns → cited first-look memo + 10 expert-call questions, scored against what analysts actually asked after T.</div>
-      <div class="rwd">R = .35·C<i>cite</i> + .30·C<i>cov</i> + .25·Q + .10·H&nbsp;&nbsp;<i>· fabricated cite ⇒ R ≤ 0.2</i></div>
-      <div class="attack atk"><b>Attack:</b> hedged quote-stitching maxes citations and rides a loose 0.60 cosine into coverage; question gold is parroted from the snapshot itself.</div>
-      <div class="attack fix"><b>Fix:</b> n-gram extraction penalty, uncited prose counts as failure, novelty filter on question gold, company-level splits, judge injection suite.</div>
-    </div>
+  <!-- 04 SEQUENCE -->
+  <section class="sec" id="s04">
+    <div class="sec-h"><span class="idx">04</span><h2>The sequence</h2></div>
+    <ol class="seq">
+      <li><div><span class="when">weeks 1–2</span><br><b>Loop Materiality Replay</b>
+        <p>Same function serves as training reward and production promotion gate — no train/deploy gap. Prereq: a 2–4 week label-accrual campaign plus a designed 3-rater agreement experiment.</p></div></li>
+      <li><div><span class="when">weeks 1–2 · same harness</span><br><b>Zoo-Router oracle sweep</b>
+        <p>Measure the cost/quality frontier for a job that runs 365×/year. The sweep is a procurement document by itself; its cached per-case predictions become free contextual-bandit instances.</p></div></li>
+      <li><div><span class="when">this quarter</span><br><b>Day-0 Memo Gym</b>
+        <p>The flagship agentic environment — the actual analyst job, fully offline and cacheable for cheap rollouts. Verifier doubles as production citation-QC from day one.</p></div></li>
+      <li><div><span class="when">side product</span><br><b>Almanac → Debate Resolution Ledger</b>
+        <p>Skip the RL claim for now; ship the ground-truth builder as a partner-facing "what changed since publication" artifact and a report-staleness alarm.</p></div></li>
+    </ol>
+  </section>
 
-    <div class="card">
-      <div class="top"><span class="lens" style="color:var(--blue)">② frozen-clock backtest</span>
-        <span class="verdict"><span class="pips"><span class="pip on g"></span><span class="pip on g"></span><span class="pip on g"></span><span class="pip on g"></span><span class="pip on g"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></span>5/10</span></div>
-      <h3>Almanac</h3>
-      <div class="task">(company, freeze date T, 30d) → probabilities over 8 material-event types, Code-Red incidence, and key-debate movement — resolved by the post-T monitoring stream.</div>
-      <div class="rwd">R = .4·R<i>events</i> + .3·R<i>codered</i> + .3·R<i>debates</i>&nbsp;&nbsp;<i>· gate: BSS &gt; 0</i></div>
-      <div class="attack atk"><b>Attack:</b> rare events mean constant near-zero prediction earns ≈0.9; "always unresolved" harvests the debate term; article dates ≠ event dates (retrodiction).</div>
-      <div class="attack fix"><b>Fix:</b> train on skill-over-climatology, proper scoring on debates, snapshot mutable rows, extract event dates. Ship its by-product regardless: the Debate Resolution Ledger.</div>
-    </div>
-  </div>
-
-  <h2><span class="n">03</span>What the red team found</h2>
-  <p class="lede">The single most useful habit: <strong>compute the constant-policy score before writing any code.</strong></p>
-
-  <div class="ruler">
-    <div class="track">
-      <span class="end l">0.75</span><span class="end r">0.80</span>
-      <div class="fill"></div>
-      <div class="tick t1"><span class="lab"><b>0.788</b>predict "1" on everything</span></div>
-      <div class="tick t2"><span class="lab"><b>0.795</b>promotion floor</span></div>
-    </div>
-    <div class="rulecap">On a 93 / 5 / 2 label distribution, a policy that reads nothing and scores every finding a 1 lands 0.007 under the gate. A five-keyword net clears it. The learning signal lives almost entirely in the rare classes.</div>
-  </div>
-
-  <div class="rt">
-    <div class="rtcell"><b>33 votes</b><span>actual post-cutoff holdout, vs ~300 assumed — and only on <em>alerted</em> findings, so the misses you care most about are unobservable.</span></div>
-    <div class="rtcell"><b>88.7 → 79.8</b><span>prod exact-match when a <code>-latest</code> alias silently repointed models in May. Stale model knowledge is a live, measured failure mode.</span></div>
-    <div class="rtcell"><b>≤ 0.2</b><span>reward cap when any citation id doesn't exist in the corpus — the one gate every design shares, mirroring a real production failure class.</span></div>
-  </div>
-
-  <h2><span class="n">04</span>The sequence</h2>
-  <ol class="seq">
-    <li><div><span class="when">weeks 1–2</span><br><b>Loop Materiality Replay</b>
-      <p>Same function serves as training reward and production promotion gate — no train/deploy gap. Prereq: a 2–4 week label-accrual campaign plus a designed 3-rater agreement experiment.</p></div></li>
-    <li><div><span class="when">weeks 1–2 · same harness</span><br><b>Zoo-Router oracle sweep</b>
-      <p>Measure the cost/quality frontier for a job that runs 365×/year. The sweep is a procurement document by itself; its cached per-case predictions become free contextual-bandit instances.</p></div></li>
-    <li><div><span class="when">this quarter</span><br><b>Day-0 Memo Gym</b>
-      <p>The flagship agentic environment — the actual analyst job, fully offline and cacheable for cheap rollouts. Verifier doubles as production citation-QC from day one.</p></div></li>
-    <li><div><span class="when">side product</span><br><b>Almanac → Debate Resolution Ledger</b>
-      <p>Skip the RL claim for now; ship the ground-truth builder as a partner-facing "what changed since publication" artifact and a report-staleness alarm.</p></div></li>
-  </ol>
-
-  <h2><span class="n">05</span>Reward-design checklist</h2>
-  <p class="lede">Distilled from eight adversarial reviews. Apply before writing any reward code.</p>
-  <ul class="check">
-    <li><b>Constant-policy audit first.</b> If a degenerate policy lands within noise of the gate, the reward is broken.</li>
-    <li><b>Skill-over-baseline inside the objective</b> — not just on the leaderboard.</li>
-    <li><b>Count the minority class.</b> With 93/5/2 imbalance the signal lives in 2% of cases.</li>
-    <li><b>Proper scoring rules only.</b> Linear probability-mass rewards are one-hot-gameable.</li>
-    <li><b>Custody: the policy reads everything it can reach.</b> Keys, sweeps, and gold live outside the sandbox.</li>
-    <li><b>Ask what the labels condition on.</b> Votes only on alerted items = the miss side is invisible.</li>
-    <li><b>Event dates, not publication dates.</b> Snapshot mutable rows; stride overlapping horizons.</li>
-    <li><b>Judges: pinned, hashed, cached, injection-tested</b> — and calibrated on a task-matched anchor set.</li>
-    <li><b>Close the denominators.</b> Fixed K, minimum claim counts, length caps.</li>
-    <li><b>Penalize extraction if you want synthesis</b> — or RL converges on quote collage.</li>
-    <li><b>Version everything.</b> Late labels mint new versions; never mutate scored rewards.</li>
-    <li><b>Every eval pays for itself with zero training</b> — audit, sweep, QC harness, ledger.</li>
-  </ul>
+  <!-- 05 CHECKLIST -->
+  <section class="sec" id="s05">
+    <div class="sec-h"><span class="idx">05</span><h2>Reward-design checklist</h2></div>
+    <p class="intro">Distilled from eight adversarial reviews. Apply before writing any reward code.</p>
+    <ul class="check">
+      <li><b>Constant-policy audit first.</b> If a degenerate policy lands within noise of the gate, the reward is broken.</li>
+      <li><b>Skill-over-baseline inside the objective</b> — not just on the leaderboard.</li>
+      <li><b>Count the minority class.</b> With 93/5/2 imbalance the signal lives in 2% of cases.</li>
+      <li><b>Proper scoring rules only.</b> Linear probability-mass rewards are one-hot-gameable.</li>
+      <li><b>Custody: the policy reads everything it can reach.</b> Keys, sweeps, and gold live outside the sandbox.</li>
+      <li><b>Ask what the labels condition on.</b> Votes only on alerted items = the miss side is invisible.</li>
+      <li><b>Event dates, not publication dates.</b> Snapshot mutable rows; stride overlapping horizons.</li>
+      <li><b>Judges: pinned, hashed, cached, injection-tested</b> — and calibrated on a task-matched anchor set.</li>
+      <li><b>Close the denominators.</b> Fixed K, minimum claim counts, length caps.</li>
+      <li><b>Penalize extraction if you want synthesis</b> — or RL converges on quote collage.</li>
+      <li><b>Version everything.</b> Late labels mint new versions; never mutate scored rewards.</li>
+      <li><b>Every eval pays for itself with zero training</b> — audit, sweep, QC harness, ledger.</li>
+    </ul>
+  </section>
 
   <footer>
     source: ~/git-repos/altis-eval (README.md · docs/designs/ · TODO.md)<br>
-    survey of 2 wikis + ~35 repos → 4 designs → 8 adversarial reviews · 27 agents · 2026-07-19
+    survey of 2 wikis + ~35 repos → 4 designs → 8 adversarial reviews · 27 agents · 2026-07-19<br>
+    <a href="../">← all pages</a>
   </footer>
+
 </main>
+<script>
+(function(){
+  var links = [].slice.call(document.querySelectorAll('.toc a.ti2'));
+  if (!links.length) return;
+  var secs = links.map(function(a){ return document.getElementById(a.getAttribute('href').slice(1)); });
+  var ticking = false;
+  function spy(){
+    ticking = false;
+    var cur = -1;
+    for (var i = 0; i < secs.length; i++) {
+      if (secs[i] && secs[i].getBoundingClientRect().top <= 140) cur = i;
+    }
+    links.forEach(function(a, i){ a.classList.toggle('on', i === cur); });
+  }
+  document.addEventListener('scroll', function(){
+    if (!ticking) { ticking = true; requestAnimationFrame(spy); }
+  }, { passive: true });
+  spy();
+})();
+(function(){
+  var btn = document.querySelector('.theme');
+  if (!btn) return;
+  var root = document.documentElement;
+  function label(){ btn.textContent = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; }
+  btn.addEventListener('click', function(){
+    if (root.getAttribute('data-theme') === 'dark') {
+      root.removeAttribute('data-theme'); localStorage.removeItem('pages-theme');
+    } else {
+      root.setAttribute('data-theme','dark'); localStorage.setItem('pages-theme','dark');
+    }
+    label();
+  });
+  label();
+})();
+</script>
 </body>
 </html>
