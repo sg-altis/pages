@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Voice Enrichment Loop — HubSpot × Supabase × Lemlist × ElevenLabs</title>
+<style>
+  :root {
+    --bg0:#131110; --bg1:#1a1715; --bg2:#211d1a; --line:#2b2622; --line2:#3a332d;
+    --text:#ece5db; --muted:#948b80; --faint:#5f584f;
+    --gold:#d9a441; --green:#58c08a; --red:#d4655a; --blue:#8f9ee0; --cyan:#56b6c2; --plum:#c493cf;
+    --orange:#e08a4c;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+    --serif: "Newsreader", Georgia, serif;
+    /* system accents */
+    --hub:#e08a4c; --sup:#58c08a; --lem:#8f9ee0; --el:#c493cf; --parse:#56b6c2;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html { scroll-behavior:smooth; }
+  body { background:var(--bg0); color:var(--text); font:15px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing:antialiased; }
+  main { max-width: 940px; margin:0 auto; padding: 64px 24px 96px; }
+  .eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); }
+  h1 { font-family:var(--serif); font-style:italic; font-weight:500; font-size:clamp(34px, 6vw, 48px); line-height:1.06; margin:10px 0 14px; }
+  .sub { color:var(--muted); max-width:680px; margin-bottom:8px; font-size:16px; }
+  h2 { font-family:var(--serif); font-style:italic; font-weight:500; font-size:26px; margin:64px 0 6px; }
+  h2 .n { font-family:var(--mono); font-style:normal; font-size:12px; color:var(--faint); vertical-align:super; margin-right:8px; letter-spacing:.1em; }
+  .lede { color:var(--muted); font-size:13.5px; margin-bottom:20px; max-width:660px; }
+  p { margin:10px 0; opacity:.92; }
+  a { color:var(--cyan); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  code { font-family:var(--mono); font-size:.86em; background:var(--bg1); border:1px solid var(--line); border-radius:5px; padding:1px 6px; color:var(--text); }
+  strong { color:var(--gold); font-weight:600; }
+
+  /* headline insight */
+  .finding { border:1px solid var(--line2); border-radius:14px; padding:22px 24px; margin:36px 0 0; background:linear-gradient(180deg, var(--bg1), var(--bg0)); }
+  .finding .fx { font-family:var(--serif); font-style:italic; font-size:21px; line-height:1.4; }
+  .finding .fx b { color:var(--gold); font-weight:600; font-style:normal; }
+  .finding .fd { color:var(--muted); font-size:13.5px; margin-top:10px; }
+  .statrow { display:flex; flex-wrap:wrap; gap:8px 30px; margin-top:18px; padding-top:14px; border-top:1px solid var(--line); }
+  .stat { font-family:var(--mono); font-size:12px; color:var(--muted); }
+  .stat b { display:block; font-size:18px; color:var(--text); font-weight:600; letter-spacing:-.01em; margin-bottom:1px; }
+
+  /* system legend rail */
+  .rail { display:flex; align-items:stretch; gap:0; flex-wrap:wrap; margin:24px 0 4px; }
+  .sys { flex:1; min-width:120px; border:1px solid var(--line); border-top-width:3px; border-radius:10px; padding:12px 14px; background:var(--bg1); }
+  .sys + .sys { margin-left:8px; }
+  .sys .nm { font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:.02em; }
+  .sys .rl { font-size:11.5px; color:var(--muted); margin-top:5px; line-height:1.5; }
+  .sys.hub { border-top-color:var(--hub); } .sys.hub .nm { color:var(--hub); }
+  .sys.sup { border-top-color:var(--sup); } .sys.sup .nm { color:var(--sup); }
+  .sys.lem { border-top-color:var(--lem); } .sys.lem .nm { color:var(--lem); }
+  .sys.el  { border-top-color:var(--el);  } .sys.el  .nm { color:var(--el); }
+  @media (max-width:720px){ .sys+.sys{ margin-left:0; } .rail{ gap:8px; } .sys{ min-width:45%; } }
+
+  /* the loop ribbon — at-a-glance */
+  .loop { display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin:26px 0 2px; font-family:var(--mono); font-size:12px; }
+  .chip { border:1px solid var(--line2); border-radius:20px; padding:5px 12px; color:var(--text); background:var(--bg1); white-space:nowrap; }
+  .chip.hub { border-color:var(--hub); color:var(--hub); }
+  .chip.sup { border-color:var(--sup); color:var(--sup); }
+  .chip.lem { border-color:var(--lem); color:var(--lem); }
+  .chip.el  { border-color:var(--el);  color:var(--el); }
+  .chip.parse { border-color:var(--parse); color:var(--parse); }
+  .loop .to { color:var(--faint); }
+  .loop .back { color:var(--gold); font-style:normal; }
+  .loopnote { font-size:12.5px; color:var(--muted); margin-top:8px; border-left:2px solid var(--gold); padding-left:12px; }
+
+  /* flow chart — phases + steps */
+  .flow { margin:22px 0 0; }
+  .phase { margin:0 0 4px; }
+  .phase-h { font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); margin:26px 0 12px; display:flex; align-items:center; gap:10px; }
+  .phase-h .ph-n { color:var(--gold); }
+  .phase-h::after { content:""; flex:1; height:1px; background:var(--line); }
+  .step { position:relative; border:1px solid var(--line); border-left-width:3px; border-radius:10px; background:var(--bg1); padding:13px 16px 13px 18px; margin:0; }
+  .step .hd { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .step .num { font-family:var(--mono); font-size:11px; color:var(--faint); }
+  .step .owner { font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; padding:2px 7px; border-radius:5px; border:1px solid var(--line2); }
+  .step .ti { font-weight:600; font-size:14px; color:var(--text); }
+  .step .dt { font-size:12.5px; color:var(--muted); margin-top:6px; line-height:1.55; }
+  .step .dt b { color:var(--text); font-weight:600; }
+  .step.hub { border-left-color:var(--hub); } .step.hub .owner { color:var(--hub); border-color:color-mix(in oklab, var(--hub) 40%, var(--line2)); }
+  .step.sup { border-left-color:var(--sup); } .step.sup .owner { color:var(--sup); border-color:color-mix(in oklab, var(--sup) 40%, var(--line2)); }
+  .step.lem { border-left-color:var(--lem); } .step.lem .owner { color:var(--lem); border-color:color-mix(in oklab, var(--lem) 40%, var(--line2)); }
+  .step.el  { border-left-color:var(--el);  } .step.el  .owner { color:var(--el);  border-color:color-mix(in oklab, var(--el) 40%, var(--line2)); }
+  .step.parse { border-left-color:var(--parse); } .step.parse .owner { color:var(--parse); border-color:color-mix(in oklab, var(--parse) 40%, var(--line2)); }
+
+  /* connector between steps carrying a payload */
+  .conn { display:flex; align-items:center; gap:10px; padding:6px 0 6px 18px; }
+  .conn .v { color:var(--faint); font-family:var(--mono); font-size:13px; line-height:1; }
+  .conn .pl { font-family:var(--mono); font-size:11px; color:var(--muted); background:var(--bg0); border:1px dashed var(--line2); border-radius:6px; padding:3px 9px; }
+  .conn .pl i { color:var(--faint); font-style:normal; }
+
+  /* branch / alt path */
+  .alt { border:1px dashed var(--line2); border-radius:10px; padding:12px 15px; margin:8px 0 0 18px; background:var(--bg0); }
+  .alt .at { font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--el); }
+  .alt .ad { font-size:12.5px; color:var(--muted); margin-top:5px; line-height:1.55; }
+
+  /* the return loop element */
+  .return { margin:16px 0 0; border:1px solid var(--gold); border-radius:12px; background:linear-gradient(180deg, color-mix(in oklab, var(--gold) 8%, var(--bg1)), var(--bg0)); padding:16px 18px; display:flex; gap:14px; align-items:flex-start; }
+  .return .ic { font-family:var(--mono); font-size:22px; color:var(--gold); line-height:1; margin-top:2px; }
+  .return .rt { font-weight:600; color:var(--gold); }
+  .return .rd { font-size:12.5px; color:var(--muted); margin-top:4px; line-height:1.55; }
+
+  /* dimensions table: claimed vs derived */
+  .dims { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:20px 0 4px; }
+  @media (max-width:760px){ .dims { grid-template-columns:1fr; } }
+  .dbox { border:1px solid var(--line); border-radius:12px; background:var(--bg1); padding:16px 18px; }
+  .dbox h3 { font-family:var(--serif); font-style:italic; font-weight:500; font-size:19px; margin-bottom:3px; }
+  .dbox .src { font-family:var(--mono); font-size:10.5px; color:var(--faint); letter-spacing:.04em; margin-bottom:12px; }
+  .dbox.claimed h3 { color:var(--cyan); } .dbox.derived h3 { color:var(--gold); }
+  .drow { display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-top:1px solid var(--line); font-size:12.5px; }
+  .drow:first-of-type { border-top:none; }
+  .drow .fld { font-family:var(--mono); font-size:11px; color:var(--text); }
+  .drow .hs { font-family:var(--mono); font-size:10.5px; color:var(--muted); text-align:right; }
+  .drow .hs i { color:var(--faint); font-style:normal; }
+
+  /* state machine */
+  .states { display:flex; flex-wrap:wrap; align-items:center; gap:7px; margin:18px 0 6px; font-family:var(--mono); font-size:11.5px; }
+  .st { border:1px solid var(--line2); border-radius:7px; padding:5px 10px; background:var(--bg1); color:var(--muted); }
+  .st.on { color:var(--text); border-color:var(--line2); }
+  .st.good { color:var(--green); border-color:color-mix(in oklab,var(--green) 45%,var(--line2)); }
+  .st.bad { color:var(--red); border-color:color-mix(in oklab,var(--red) 45%,var(--line2)); }
+  .states .to { color:var(--faint); }
+  .exits { margin-top:14px; display:flex; flex-direction:column; gap:6px; }
+  .exit { font-size:12.5px; color:var(--muted); }
+  .exit b { font-family:var(--mono); font-size:11px; }
+  .exit.bad b { color:var(--red); } .exit.good b { color:var(--green); } .exit.warn b { color:var(--gold); }
+
+  /* decision callouts */
+  .calls { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:18px 0 4px; }
+  @media (max-width:720px){ .calls { grid-template-columns:1fr; } }
+  .call { border:1px solid var(--line); border-radius:11px; background:var(--bg1); padding:14px 16px; }
+  .call .ct { font-weight:600; font-size:13.5px; color:var(--text); }
+  .call .cd { font-size:12.5px; color:var(--muted); margin-top:5px; line-height:1.55; }
+  .call .cd b { color:var(--gold); font-weight:600; }
+
+  hr { border:none; border-top:1px solid var(--line); margin:8px 0; }
+  footer { margin-top:72px; padding-top:20px; border-top:1px solid var(--line); font-family:var(--mono); font-size:11px; color:var(--faint); line-height:1.9; }
+  footer a { color:var(--muted); }
+  .backlink { font-family:var(--mono); font-size:11px; }
+</style>
+</head>
+<body>
+<main>
+
+  <div class="eyebrow">System Design · Voice Prescreen Enrichment</div>
+  <h1>The Voice Enrichment Loop</h1>
+  <p class="sub">A closed loop that takes a CRM row, calls the person with an AI voice interviewer, and writes back what they actually claimed — and how much to believe it. Four systems, one join key, no human in the middle until a real expert is found.</p>
+
+  <div class="finding">
+    <div class="fx">The loop only closes because one value — <b>crm_id</b> — rides every hop: into the dynamic variables that personalize the call, back out on the conversation record, through the post-call webhook, and onto the HubSpot property write.</div>
+    <div class="fd">Everything else is plumbing. Get the join key right and the enrichment is deterministic; get it wrong and you have a pile of orphaned transcripts.</div>
+    <div class="statrow">
+      <div class="stat"><b>4</b>systems in the loop</div>
+      <div class="stat"><b>2</b>delivery modes · email link / phone</div>
+      <div class="stat"><b>8</b>fields written back per contact</div>
+      <div class="stat"><b>~$0.45</b>all-in per 5-min call</div>
+    </div>
+  </div>
+
+  <h2><span class="n">01</span>The four systems</h2>
+  <p class="lede">Each does one job. The rule that keeps it sane: <strong>HubSpot stays flat, Supabase holds the mess.</strong> Transcripts, nested analysis JSON, webhook idempotency, and per-contact call state live in Supabase; HubSpot only ever sees clean, final columns.</p>
+  <div class="rail">
+    <div class="sys hub"><div class="nm">HubSpot</div><div class="rl">System of record. Source of the contact list (email, phone, persona, target company) and destination for the enriched columns.</div></div>
+    <div class="sys sup"><div class="nm">Supabase</div><div class="rl">The spine. Orchestration state, link/variable generation, webhook receiver, transcript + analysis store, parser.</div></div>
+    <div class="sys lem"><div class="nm">Lemlist</div><div class="rl">Outbound. Sends the personalized invite sequence carrying each contact's unique voice-survey link; reports opens/clicks.</div></div>
+    <div class="sys el"><div class="nm">ElevenLabs</div><div class="rl">The interviewer. Runs the prescreen agent, hangs up on non-fits, and returns transcript + evaluation + extracted fields.</div></div>
+  </div>
+  <div class="loop">
+    <span class="chip hub">HubSpot</span><span class="to">→</span>
+    <span class="chip sup">Supabase</span><span class="to">→</span>
+    <span class="chip lem">Lemlist</span><span class="to">→</span>
+    <span class="chip el">ElevenLabs</span><span class="to">→</span>
+    <span class="chip parse">Parse</span><span class="to">→</span>
+    <span class="chip sup">Supabase</span><span class="to">→</span>
+    <span class="chip hub">HubSpot</span>
+    <span class="back">&nbsp;⟲ enriched</span>
+  </div>
+  <div class="loopnote">Read left-to-right as the happy path; the last arrow is the whole point — the row returns to HubSpot fuller than it left.</div>
+
+  <h2><span class="n">02</span>The flow, end to end</h2>
+  <p class="lede">Colored left-edges show which system owns each step. Dashed boxes on the connectors are the payload passed forward.</p>
+
+  <div class="flow">
+
+    <div class="phase-h"><span class="ph-n">Phase 1</span> Sync &amp; stage</div>
+    <div class="step hub">
+      <div class="hd"><span class="num">01</span><span class="owner">HubSpot</span><span class="ti">Contact enters the target list</span></div>
+      <div class="dt">A filtered view (has email · persona mapped · associated with a probe company) fires a webhook — or a scheduled sync sweeps it. The HubSpot contact id becomes <b>crm_id</b>, the join key for the whole loop.</div>
+    </div>
+    <div class="conn"><span class="v">▼</span><span class="pl">contact { <i>crm_id, email, phone, company, persona, competitors</i> }</span></div>
+    <div class="step sup">
+      <div class="hd"><span class="num">02</span><span class="owner">Supabase</span><span class="ti">Stage row + mint personalized link</span></div>
+      <div class="dt">Upsert into <code>contacts</code>. Build the per-person <b>dynamic variables</b> and a <b>voice_survey_url</b> — the hosted agent link with <code>var_crm_id</code>, <code>var_vendor</code>, <code>var_persona</code> baked in. Optionally a signed URL so it can't be forwarded or tampered with.</div>
+    </div>
+
+    <div class="phase-h"><span class="ph-n">Phase 2</span> Outbound</div>
+    <div class="conn"><span class="v">▼</span><span class="pl">lead + <i>{{voiceSurveyUrl}}</i> custom var</span></div>
+    <div class="step lem">
+      <div class="hd"><span class="num">03</span><span class="owner">Lemlist</span><span class="ti">Send the invite sequence</span></div>
+      <div class="dt">Push the contact into a Lemlist campaign with the link as a custom variable. Email framing: <i>"a 2-minute voice check before we book a paid call."</i> Sequence handles the reminder if unopened. The email is also where <b>consent</b> is gated — replacing the interviewer's built-in consent screen.</div>
+    </div>
+    <div class="conn"><span class="v">▼</span><span class="pl">webhook: <i>opened / clicked</i></span></div>
+    <div class="step sup">
+      <div class="hd"><span class="num">04</span><span class="owner">Supabase</span><span class="ti">Track engagement</span></div>
+      <div class="dt">Lemlist activity webhooks update <code>outreach_state</code>. A click is the intent signal — the contact is now walking into the call.</div>
+    </div>
+
+    <div class="phase-h"><span class="ph-n">Phase 3</span> The call</div>
+    <div class="conn"><span class="v">▼</span><span class="pl">click → conversation starts, vars bound</span></div>
+    <div class="step el">
+      <div class="hd"><span class="num">05</span><span class="owner">ElevenLabs</span><span class="ti">Run the prescreen</span></div>
+      <div class="dt">The hosted page opens the agent with the contact's variables already bound. Five questions, one probing follow-up each. The <code>end_call</code> tool <b>hangs up early</b> if they reveal they're not a fit (wrong person, no real exposure, declines) — proven: it exits at turn 5 instead of grinding through all five.</div>
+    </div>
+    <div class="alt">
+      <div class="at">Alt path · phone</div>
+      <div class="ad">Skip Lemlist for contacts with phone numbers: Supabase submits a <code>batch-calling</code> job (one request, whole list, each recipient carrying its own dynamic variables) and ElevenLabs <b>calls them</b>. Same agent, same downstream parsing — only the trigger differs.</div>
+    </div>
+    <div class="conn"><span class="v">▼</span><span class="pl">post-call analysis (evaluation + data collection)</span></div>
+    <div class="step el">
+      <div class="hd"><span class="num">06</span><span class="owner">ElevenLabs</span><span class="ti">Score &amp; extract on completion</span></div>
+      <div class="dt">Once the call ends, an analysis LLM runs the configured <b>evaluation criteria</b> (tenure / depth / fraud → success·failure·unknown + rationale) and <b>data-collection</b> fields (tenure, role, strengths, weaknesses) against the transcript. No separate judge pass needed for these.</div>
+    </div>
+
+    <div class="phase-h"><span class="ph-n">Phase 4</span> Parse &amp; enrich</div>
+    <div class="conn"><span class="v">▼</span><span class="pl">HMAC-signed webhook { <i>conversation_id, transcript, analysis, crm_id</i> }</span></div>
+    <div class="step parse">
+      <div class="hd"><span class="num">07</span><span class="owner">Parse</span><span class="ti">Receive, verify, flatten</span></div>
+      <div class="dt">A Supabase Edge Function verifies the signature, then <b>keys on conversation_id and upserts</b> (webhooks double-fire). It reads <code>dynamic_variables.crm_id</code> to find the row, flattens <code>evaluation_criteria_results</code> + <code>data_collection_results</code> into <code>call_results</code>, and keeps the raw transcript + audio URL.</div>
+    </div>
+    <div class="conn"><span class="v">▼</span><span class="pl">PATCH properties { <i>voice_*</i> } on crm_id</span></div>
+    <div class="step hub">
+      <div class="hd"><span class="num">08</span><span class="owner">HubSpot</span><span class="ti">Write back &amp; route</span></div>
+      <div class="dt">Eight clean columns land on the contact (§03). A HubSpot workflow reads them: a genuine fit pings a researcher in Slack to book the paid call; a non-fit is marked disqualified with the reason the agent gave.</div>
+    </div>
+
+    <div class="return">
+      <div class="ic">⟲</div>
+      <div>
+        <div class="rt">The loop closes.</div>
+        <div class="rd">The same row that left HubSpot as <i>name · email · persona · target company</i> comes back carrying a self-reported association <i>and</i> a credibility judgment on it — enough for a human to book or bin without listening to a single call.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <h2><span class="n">03</span>What actually gets written back</h2>
+  <p class="lede">Two kinds of enrichment, and keeping them separate is the point. One is what the person <em>says</em> about their association; the other is how much the transcript lets us <em>believe</em> it.</p>
+  <div class="dims">
+    <div class="dbox claimed">
+      <h3>Self-claimed</h3>
+      <div class="src">analysis.data_collection_results — extracted verbatim</div>
+      <div class="drow"><span class="fld">tenure</span><span class="hs">voice_tenure <i>· str</i></span></div>
+      <div class="drow"><span class="fld">role</span><span class="hs">voice_role <i>· str</i></span></div>
+      <div class="drow"><span class="fld">strengths_vs_competitors</span><span class="hs">voice_strengths <i>· str</i></span></div>
+      <div class="drow"><span class="fld">weaknesses</span><span class="hs">voice_weaknesses <i>· str</i></span></div>
+      <div class="drow"><span class="fld">followup_worthy</span><span class="hs">voice_followup <i>· bool</i></span></div>
+    </div>
+    <div class="dbox derived">
+      <h3>Derived / judged</h3>
+      <div class="src">analysis.evaluation_criteria_results — LLM over transcript</div>
+      <div class="drow"><span class="fld">tenure_confidence</span><span class="hs">voice_tenure_conf <i>· enum</i></span></div>
+      <div class="drow"><span class="fld">vendor_eval_depth</span><span class="hs">voice_eval_depth <i>· enum</i></span></div>
+      <div class="drow"><span class="fld">fraud_risk</span><span class="hs">voice_fraud_flag <i>· enum</i></span></div>
+      <div class="drow"><span class="fld">call_successful</span><span class="hs">voice_outcome <i>· enum</i></span></div>
+      <div class="drow"><span class="fld">transcript_summary + url</span><span class="hs">voice_transcript <i>· link</i></span></div>
+    </div>
+  </div>
+
+  <h2><span class="n">04</span>Contact state machine</h2>
+  <p class="lede">One row, one lifecycle. Every hop advances the state, so a stalled contact is always legible — you can see exactly where it fell out.</p>
+  <div class="states">
+    <span class="st on">staged</span><span class="to">→</span>
+    <span class="st on">invited</span><span class="to">→</span>
+    <span class="st on">opened</span><span class="to">→</span>
+    <span class="st on">clicked</span><span class="to">→</span>
+    <span class="st on">in_call</span><span class="to">→</span>
+    <span class="st on">completed</span><span class="to">→</span>
+    <span class="st on">parsed</span><span class="to">→</span>
+    <span class="st good">enriched</span>
+  </div>
+  <div class="exits">
+    <div class="exit good"><b>routed_book</b> — tenure &amp; depth pass, no fraud flag, follow-up worthy → researcher pinged to book the paid call.</div>
+    <div class="exit bad"><b>disqualified</b> — agent invoked end_call, or tenure/depth failed → closed with the stated reason.</div>
+    <div class="exit warn"><b>no_show</b> — clicked but never completed; drops back into the Lemlist reminder sequence.</div>
+    <div class="exit warn"><b>fraud_flag</b> — integrity criterion failed → held for human review, never auto-rejected.</div>
+  </div>
+
+  <h2><span class="n">05</span>Decisions that keep it real</h2>
+  <div class="calls">
+    <div class="call"><div class="ct">Supabase is the spine, not HubSpot</div><div class="cd">Never stuff transcripts or nested analysis into the CRM. HubSpot gets <b>flat final columns</b>; Supabase owns the state machine, raw payloads, and idempotency.</div></div>
+    <div class="call"><div class="ct">crm_id threads every hop</div><div class="cd">Dynamic variable → conversation record → webhook → property write. It is the <b>only</b> thing that makes results joinable back to a person.</div></div>
+    <div class="call"><div class="ct">Idempotent webhooks</div><div class="cd">Post-call and Lemlist webhooks both double-fire. Key on <b>conversation_id</b> (or lead+event) and upsert — never append.</div></div>
+    <div class="call"><div class="ct">One agent, two triggers</div><div class="cd">Email link and phone batch share the same agent and the same parser. Persona and company are <b>variables, not separate agents</b> — no flow-per-persona sprawl.</div></div>
+    <div class="call"><div class="ct">Consent lives in the email</div><div class="cd">The Lemlist invite + landing gate consent before the call, so there's <b>one</b> consent system feeding the existing compliance flow, not two.</div></div>
+    <div class="call"><div class="ct">Parsing is already done</div><div class="cd">ElevenLabs' analysis LLM fills the dimensions on completion. Add your own pass <b>only</b> for anything beyond the 30-criteria / 40-field caps.</div></div>
+  </div>
+
+  <footer>
+    reference impl: ~/git-repos/ribbonai (survey_pipeline.py · ELEVENLABS_FEATURE_MAPPING.md)<br>
+    proven against agent_1901…4jr · web-link + phone-batch delivery · end_call verified · 2026-07-20<br>
+    <span class="backlink"><a href="../">← all pages</a></span>
+  </footer>
+
+</main>
+</body>
+</html>
