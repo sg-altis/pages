@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>If China Had Split — Six Near-Nations of 1911–1949</title>
+<title>If China Had Split — Near-Nations of 1911–1949</title>
 <script>if(localStorage.getItem('pages-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
 <style>
   :root {
@@ -85,12 +85,14 @@
   .region { fill:transparent; stroke:var(--graphite); stroke-width:1.1; cursor:pointer; transition:fill .12s; }
   .region:hover { fill:var(--hairline); }
   .region.on { fill:var(--ink); stroke:var(--ink); }
+  .region.alt { stroke-dasharray:4 3; }
   .base { fill:var(--hairline); opacity:.55; stroke:var(--ink); stroke-width:1.4; }
   .lbl { font-family:var(--mono); font-size:11px; letter-spacing:.05em; fill:var(--graphite); pointer-events:none; text-anchor:middle; text-transform:uppercase; }
-  .region.on ~ .lbl.for-on, .lbl.on { fill:var(--paper); font-weight:600; }
+  .lbl.on { fill:var(--paper); font-weight:600; }
   .cap { margin-top:10px; font-family:var(--mono); font-size:10.5px; color:var(--graphite); line-height:1.6; }
 
   .legend { display:flex; flex-direction:column; border-top:2px solid var(--ink); }
+  .legend .grp { font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--graphite); padding:14px 2px 6px; }
   .legend button { all:unset; cursor:pointer; display:flex; justify-content:space-between; align-items:baseline;
     gap:10px; padding:11px 2px; border-bottom:1px solid var(--hairline); font-family:var(--mono); font-size:12.5px;
     color:var(--graphite); }
@@ -146,34 +148,35 @@
 <body>
 <button class="theme" aria-label="Toggle color theme">dark</button>
 <nav class="toc" aria-label="Contents">
-  <a class="tt" href="#top">China's Six Near-Nations</a>
+  <a class="tt" href="#top">China's Near-Nations</a>
   <a class="ti2" href="#s01"><span class="n">01</span>The map</a>
-  <a class="ti2" href="#s02"><span class="n">02</span>The six nations</a>
-  <a class="ti2" href="#s03"><span class="n">03</span>Method &amp; exclusions</a>
+  <a class="ti2" href="#s02"><span class="n">02</span>The ethnic six</a>
+  <a class="ti2" href="#s03"><span class="n">03</span>The Han fracture lines</a>
+  <a class="ti2" href="#s04"><span class="n">04</span>Method &amp; exclusions</a>
 </nav>
 <main id="top">
 
   <div class="kick">Counterfactual Political Geography</div>
   <h1>If China Had Split Like the Other Empires</h1>
-  <p class="lede">The Qing collapse of 1911 was, like the Ottoman and Austro-Hungarian collapses, a multi-ethnic empire coming apart at its seams. Unlike those two, almost all of the periphery was pulled back together by 1949 — only Outer Mongolia's independence stuck. This maps the other near-misses: six regions with <strong>real</strong> autonomy or independence movements in that 1911–1949 window, and what they'd plausibly look like as states today.</p>
+  <p class="lede">The Qing collapse of 1911 was, like the Ottoman and Austro-Hungarian collapses, a multi-ethnic empire coming apart at its seams. Unlike those two, almost all of the periphery was pulled back together by 1949 — only Outer Mongolia's independence stuck. This maps the near-misses in two layers: six ethnic homelands with <strong>real</strong> autonomy or independence movements in that 1911–1949 window — and, inside the Han core itself, five Sinitic near-nations, where the languages diverge as far as the Romance family and a 1920s federalist movement briefly made provincial sovereignty look inevitable.</p>
 
   <p class="thesis"><span class="k">This is a historical thought experiment, not a policy argument</span> — every state below is built from a documented movement (a declared republic, a self-governing warlord regime, a treaty attempt), not from wishful redrawing. Tap a region on the map for its case.</p>
 
   <div class="stats">
-    <div class="stat"><span class="v">6</span><span class="k">successor states mapped</span></div>
+    <div class="stat"><span class="v">6 + 5</span><span class="k">ethnic states + sinitic near-nations</span></div>
     <div class="stat"><span class="v">1911–49</span><span class="k">fragmentation window</span></div>
-    <div class="stat"><span class="v">1 / 6</span><span class="k">actually stuck (Mongolia)</span></div>
-    <div class="stat"><span class="v">66.5M</span><span class="k">combined ethnic pop. today, 2020 census</span></div>
+    <div class="stat"><span class="v">1 (+1)</span><span class="k">stuck: mongolia · taiwan de facto</span></div>
+    <div class="stat"><span class="v">~350M</span><span class="k">non-mandarin sinitic speakers today</span></div>
   </div>
 
   <!-- 01 MAP -->
   <section class="sec" id="s01">
     <div class="sec-h"><span class="idx">01</span><h2>The map</h2><span class="note">tap a region · schematic, not to scale</span></div>
-    <p class="intro">Borders are illustrative, not administrative — this is a diagram of six claims, not a survey map. The undivided background is China's Han-majority core, which stayed unified in this scenario as it did in reality.</p>
+    <p class="intro">Borders are illustrative, not administrative — this is a diagram of claims, not a survey map. Solid regions are the six ethnic successor states; dashed regions are the second layer, the Sinitic near-nations inside the Han core (<a href="#s03">§03</a>).</p>
 
     <div class="mapwrap">
       <div class="mapbox">
-        <svg id="map" viewBox="0 0 640 560" role="img" aria-label="Schematic map of China with six hypothetical successor states">
+        <svg id="map" viewBox="0 0 640 560" role="img" aria-label="Schematic map of China: six ethnic successor states (solid outlines) and five Sinitic near-nations inside the Han core (dashed outlines)">
           <path class="base" d="M60,230 110,150 220,140 240,40 350,20 430,40 430,145 560,120 610,210 560,280 520,320 560,360 520,410 500,450 460,490 420,510 370,520 330,525 280,505 240,485 200,460 160,430 120,390 90,350 65,310 Z"/>
 
           <path class="region" data-key="mongolia" d="M220,140 240,40 350,20 430,40 430,145 400,190 330,210 280,190 220,170 Z"/>
@@ -183,14 +186,25 @@
           <path class="region" data-key="tibet" d="M60,230 90,180 140,190 190,190 200,230 250,280 300,300 330,360 280,420 200,460 160,430 120,390 90,350 65,310 Z"/>
           <path class="region" data-key="guangxi" d="M240,485 280,505 330,525 370,520 350,480 300,450 260,460 Z"/>
 
-          <text class="lbl" x="330" y="105">Mongolia</text>
-          <text class="lbl" x="150" y="175">Xinjiang</text>
-          <text class="lbl" x="500" y="195" text-anchor="middle">Manchuria</text>
-          <text class="lbl" x="278" y="238" font-size="9.5">Xibei</text>
-          <text class="lbl" x="170" y="330">Tibet</text>
-          <text class="lbl" x="300" y="497" font-size="9.5">Guangxi</text>
+          <path class="region alt" data-key="jin" d="M330,210 400,190 430,190 445,235 400,265 350,260 Z"/>
+          <path class="region alt" data-key="wu" d="M490,250 560,280 520,320 560,360 520,410 470,340 455,270 Z"/>
+          <path class="region alt" data-key="xiang" d="M355,305 415,285 450,340 425,400 385,415 340,360 Z"/>
+          <path class="region alt" data-key="min" d="M520,410 500,450 460,490 430,450 455,405 Z"/>
+          <path class="region alt" data-key="yue" d="M385,450 430,450 460,490 420,510 370,520 350,480 Z"/>
+
+          <text class="lbl" data-key="mongolia" x="330" y="105">Mongolia</text>
+          <text class="lbl" data-key="xinjiang" x="150" y="175">Xinjiang</text>
+          <text class="lbl" data-key="manchuria" x="500" y="195" text-anchor="middle">Manchuria</text>
+          <text class="lbl" data-key="xibei" x="278" y="238" font-size="9.5">Xibei</text>
+          <text class="lbl" data-key="tibet" x="170" y="330">Tibet</text>
+          <text class="lbl" data-key="guangxi" x="300" y="497" font-size="9.5">Guangxi</text>
+          <text class="lbl" data-key="jin" x="388" y="232" font-size="9.5">Jin</text>
+          <text class="lbl" data-key="wu" x="505" y="312" font-size="9.5">Wu</text>
+          <text class="lbl" data-key="xiang" x="395" y="355" font-size="9.5">Xiang</text>
+          <text class="lbl" data-key="min" x="472" y="444" font-size="9.5">Min</text>
+          <text class="lbl" data-key="yue" x="404" y="488" font-size="9.5">Yue</text>
         </svg>
-        <p class="cap">Six ethnic homelands with documented 1911–1949 autonomy or independence movements. Everything unmarked — the North China Plain, the Yangtze basin, Sichuan's lowlands, the southeast coast — is the Han core, shown here as background, not a claim.</p>
+        <p class="cap">Solid outlines: six ethnic homelands with documented 1911–1949 movements. Dashed: five Sinitic near-nations inside the Han core — linguistic nations and federalist claims, §03. Still unmarked: the Mandarin-speaking North China Plain and Sichuan, the parts that never produced a separate claim.</p>
       </div>
 
       <div>
@@ -204,8 +218,8 @@
 
   <!-- 02 TABLE -->
   <section class="sec" id="s02">
-    <div class="sec-h"><span class="idx">02</span><h2>The six nations</h2><span class="note">reference table</span></div>
-    <p class="intro">Population figures are the <strong>2020 PRC census</strong> count for each ethnicity nationwide — a modern number, not the 1920s demographic mix a real successor state would have had (see <a href="#s03">§03</a> on why those differ, especially for Xinjiang and Inner Mongolia).</p>
+    <div class="sec-h"><span class="idx">02</span><h2>The ethnic six</h2><span class="note">reference table</span></div>
+    <p class="intro">Population figures are the <strong>2020 PRC census</strong> count for each ethnicity nationwide — a modern number, not the 1920s demographic mix a real successor state would have had (see <a href="#s04">§04</a> on why those differ, especially for Xinjiang and Inner Mongolia).</p>
     <div class="tblwrap">
       <table>
         <thead>
@@ -217,22 +231,54 @@
           <tr><td class="nm">Greater Tibet</td><td class="serif">De facto independent 1912–1951; Simla Convention 1913–14</td><td>Lhasa</td><td>7.06M</td><td class="serif">Himalayan buffer, India-facing</td></tr>
           <tr><td class="nm">Manchuria</td><td class="serif">Manchukuo 1932–45 (self-rule minus the Japanese puppeteer)</td><td>Shenyang / Changchun</td><td>10.42M</td><td class="serif">Industrial client state, Japan/Russia-facing</td></tr>
           <tr><td class="nm">Xibei (Hui northwest)</td><td class="serif">Dungan Revolt 1862–77; Ma Clique warlord rule 1910s–1949</td><td>Lanzhou</td><td>11.38M</td><td class="serif">Trade bridge, China–Central Asia</td></tr>
-          <tr><td class="nm">Guangxi (Zhuang)</td><td class="serif">Nong Zhigao's kingdoms, 1042–53 (weakest precedent — see §03)</td><td>Nanning</td><td>19.57M</td><td class="serif">Tai/Southeast Asia-facing</td></tr>
+          <tr><td class="nm">Guangxi (Zhuang)</td><td class="serif">Nong Zhigao's kingdoms, 1042–53 (weakest precedent — see §04)</td><td>Nanning</td><td>19.57M</td><td class="serif">Tai/Southeast Asia-facing</td></tr>
         </tbody>
       </table>
     </div>
   </section>
 
-  <!-- 03 METHOD -->
+  <!-- 03 HAN FRACTURE LINES -->
   <section class="sec" id="s03">
-    <div class="sec-h"><span class="idx">03</span><h2>Method &amp; exclusions</h2></div>
-    <p class="intro">The rule for inclusion: a documented, named political entity — a declared republic, a self-governing warlord regime, a treaty negotiation — in the 1911–1949 window. Everything below either failed that test or was folded into one of the six.</p>
+    <div class="sec-h"><span class="idx">03</span><h2>The Han fracture lines</h2><span class="note">dashed on the map · sinitic core</span></div>
+    <p class="intro">The deeper counterfactual. "Han" bundles together seven-plus Sinitic languages — Wu, Yue, Min, Xiang, Hakka, Gan, Jin — that diverge from Mandarin and from each other roughly as far as the Romance languages do. Europe's logic would have made each a nation. And the 1920s nearly did: the <strong>federalist self-government movement</strong> (联省自治) had provinces writing their own constitutions until the Northern Expedition buried it in 1926–28 and the party-state won.</p>
+
+    <p class="thesis"><span class="k">The canonical citation is Mao himself —</span> in September 1920 a 26-year-old Mao Zedong argued in Changsha's press for an independent <em>Republic of Hunan</em>, proposing that China dissolve into twenty-seven sovereign states. Hunan then enacted the era's only provincial constitution that actually operated (January 1922). The man who buried Chinese federalism was, six years earlier, its most radical voice.</p>
+
+    <div class="tblwrap" style="margin-top:32px">
+      <table>
+        <thead>
+          <tr><th>Near-nation</th><th>Language · speakers</th><th>Precedent</th><th>Capital</th><th>Likely orientation</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="nm">Cantonia (Yue)</td><td>Yue · ~85M</td><td class="serif">Nanyue kingdom 204–111 BC; Chen Jiongming's federalist Guangdong, split with Sun Yat-sen 1922</td><td>Canton + HK</td><td class="serif">Maritime, diaspora-linked — a mainland-scale Hong Kong</td></tr>
+          <tr><td class="nm">Jiangnan (Wu)</td><td>Wu · ~80M</td><td class="serif">Zhejiang draft constitution 1921; delta elites' neutrality pacts</td><td>Shanghai</td><td class="serif">Commercial, treaty-port cosmopolitan</td></tr>
+          <tr><td class="nm">Hokkien coast (Min)</td><td>Min · ~75M</td><td class="serif">Fujian People's Government 1933–34; Republic of Formosa 1895; Taiwan today</td><td>Fuzhou / Amoy</td><td class="serif">Maritime Southeast Asia — the diaspora is the state</td></tr>
+          <tr><td class="nm">Hunan (Xiang)</td><td>Xiang · ~37M</td><td class="serif">Mao's Republic-of-Hunan essays 1920; the era's only operating provincial constitution, 1922</td><td>Changsha</td><td class="serif">Fierce, army-exporting middle power</td></tr>
+          <tr><td class="nm">Jin (Shanxi)</td><td>Jin · ~47M</td><td class="serif">Yan Xishan's "Model Province," de facto separate 1911–49 (with interruptions)</td><td>Taiyuan</td><td class="serif">Protectionist, coal-exporting — a Prussia of the loess</td></tr>
+          <tr><td class="nm">Hakka (no territory)</td><td>Hakka · ~44M</td><td class="serif">Taiping Heavenly Kingdom 1851–64, Hakka-led, held Nanjing 11 years</td><td>—</td><td class="serif">The diaspora nation — see the note below</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note-box">
+      <p><b>Hakka: the nation without a map polygon.</b> Any map of this counterfactual hits the same wall — the Hakka ("guest families") are scattered across the highlands of Guangdong, Fujian, Jiangxi, and Taiwan with no contiguous homeland, which is exactly why they appear in the table but not on the map. Their state precedent is the most spectacular on this page: the Taiping Heavenly Kingdom (1851–64) was Hakka-led, held Nanjing for eleven years, and its suppression was the bloodiest civil war in history. What the Hakka built instead of a state is a leadership diaspora — Taiping founder Hong Xiuquan, PLA founding marshal Zhu De, Lee Kuan Yew, and Lee Teng-hui were Hakka, and Deng Xiaoping is reportedly of Hakka descent.</p>
+      <p><b>And the Hundred Yue.</b> The Baiyue — the pre-Chinese peoples of the entire southeast coast — were assimilated over two millennia into today's Yue-, Min-, and Wu-speaking populations and the Tai-Kadai peoples like the Zhuang. They aren't a modern group you can map. But one Baiyue polity permanently escaped the Chinese state, and it's on every map already: <em>Việt</em> Nam is the same word as <em>Yue</em> (越).</p>
+    </div>
+  </section>
+
+  <!-- 04 METHOD -->
+  <section class="sec" id="s04">
+    <div class="sec-h"><span class="idx">04</span><h2>Method &amp; exclusions</h2></div>
+    <p class="intro">The rule for the solid regions: a documented, named political entity — a declared republic, a self-governing warlord regime, a treaty negotiation — in the 1911–1949 window. The dashed regions use a looser but real bar: a distinct Sinitic language <strong>plus</strong> a period political anchor (a constitution, a breakaway government, a de facto separate administration). Everything below failed one of those tests or was folded into a listed state.</p>
 
     <div class="excl">
       <div class="exi"><div class="et">Miao / Hmong (11.1M today)</div><div class="ed">No unified territory — scattered across mountain ranges in five provinces and into Vietnam, Laos, Thailand as the Hmong diaspora. No 1920s political entity to anchor a state on.</div></div>
       <div class="exi"><div class="et">Yi (9.8M today)</div><div class="ed">Same problem: highland clan federations across Yunnan, Sichuan, Guizhou, never unified into one polity, no warlord-era claim.</div></div>
       <div class="exi"><div class="et">Koreans (Yanbian)</div><div class="ed">Real irredentist pull toward Korea existed, but the territory and population are small enough that they're folded into the Manchuria case above rather than treated as a seventh state.</div></div>
       <div class="exi"><div class="et">Tujia (9.9M today)</div><div class="ed">Long assimilated and dispersed through Hunan/Hubei/Chongqing with no distinct territorial claim in this period.</div></div>
+      <div class="exi"><div class="et">Sichuan</div><div class="ed">Fragmented among its own warlord cliques for the whole era — but it speaks Southwestern Mandarin. Regionalism without a linguistic nation underneath it, so it fails the dashed-region bar.</div></div>
+      <div class="exi"><div class="et">Yunnan under Long Yun</div><div class="ed">Genuinely near-independent 1927–45 (own provincial currency, French-Indochina rail link) until Chiang's 1945 coup removed Long Yun — but it was a Han-run multi-ethnic province, not a national movement; its internal claims (Yi, Dai, Bai) never unified.</div></div>
+      <div class="exi"><div class="et">Gan (Jiangxi, ~22M speakers)</div><div class="ed">A distinct Sinitic language that never produced a period political anchor — no constitution, no breakaway government. Language alone doesn't clear the bar.</div></div>
     </div>
 
     <div class="note-box">
@@ -242,7 +288,7 @@
   </section>
 
   <footer>
-    schematic map, illustrative borders · population figures: 2020 Seventh National Census (PRC) · historical claims verified against standard tertiary sources (Bogd Khanate, Tibet 1912–1951, First/Second East Turkestan Republics, Manchukuo, Ma clique, Nong Zhigao rebellions)<br>
+    schematic map, illustrative borders · population figures: 2020 Seventh National Census (PRC); speaker counts approximate · historical claims verified against standard tertiary sources (Bogd Khanate, Tibet 1912–1951, First/Second East Turkestan Republics, Manchukuo, Ma clique, Nong Zhigao rebellions, liansheng zizhi movement, Hunan constitution 1922, Fujian People's Government, Taiping Heavenly Kingdom, Nanyue)<br>
     <a href="../">← all pages</a>
   </footer>
 
@@ -289,6 +335,54 @@ var DATA = {
     capital: "Lanzhou (or Xining).",
     alignment: "A Sinophone Muslim identity distinct from Turkic Xinjiang — a trade-oriented bridge state rather than a natural ally of either neighboring bloc."
   },
+  yue: {
+    name: "Cantonia", sub: "Yue / Cantonese nation",
+    precedent: "Chen Jiongming — Guangdong's governor-general and the federalist movement's leading soldier — wanted a self-governing Guangdong as the model unit of a federated China, and broke violently with Sun Yat-sen over it in June 1922 (Sun wanted to conquer the north first; Chen wanted a constitutional Guangdong first). The deep precedent is the Nanyue kingdom (204–111 BC), ruled from what is now Guangzhou over the Yue south including northern Vietnam. And through this whole era and after, Hong Kong and Macau sat on its coast as living proof the region could run as a separate jurisdiction.",
+    composition: "Cantonese (Yue) speakers — roughly 85M worldwide today, the great emigrant language of Gold Mountain and Chinatowns everywhere — with Teochew and Hakka minorities, and the ancient Baiyue substrate underneath the whole coast.",
+    economy: "The Pearl River delta: the old Canton system's monopoly on foreign trade, diaspora remittances, and in any era the most globally connected commerce in China — a Cantonese state would look like a mainland-scale Hong Kong, with the actual Hong Kong as its offshore financial twin.",
+    capital: "Canton (Guangzhou).",
+    alignment: "Maritime and diaspora-linked — the most outward-facing of any state on this page, Sinitic or otherwise."
+  },
+  wu: {
+    name: "Jiangnan", sub: "Wu-speaking delta",
+    precedent: "The least separatist rich region in history, but it did move: Zhejiang promulgated its own provincial constitution on September 9, 1921 — first in the country, though never implemented — and delta gentry and merchant elites brokered the Jiangsu–Zhejiang peace pact of 1923 to keep warlord armies out. The reason it never went further is itself the analysis: Jiangnan's bankers and industrialists owned the national economy, so they bought the center rather than leaving it.",
+    composition: "Wu speakers — Shanghainese, Suzhou, Hangzhou, Ningbo — roughly 80M today, the second-largest Sinitic language and mutually unintelligible with Mandarin.",
+    economy: "Silk, cotton mills, and Shanghai's banks then; the richest region of China in essentially every century. As a state: a Netherlands-scale trading and financial power.",
+    capital: "Shanghai, with Hangzhou and Suzhou as the hinterland courts.",
+    alignment: "Commercial, treaty-port cosmopolitan — the state most likely to have stayed neutral and gotten rich."
+  },
+  min: {
+    name: "Hokkien Coast", sub: "Min nation, Fujian + Taiwan",
+    precedent: "The Fujian People's Government: in November 1933 the 19th Route Army — fresh from fighting the Japanese at Shanghai — declared a breakaway republic in Fuzhou against Chiang Kai-shek; it lasted until January 1934. Before that, the Republic of Formosa (May–October 1895), declared in Taipei ahead of the Japanese takeover. And after: the Hokkien-majority polity on Taiwan is, alongside Mongolia, the era's other de facto surviving separate jurisdiction.",
+    composition: "Min speakers — Hokkien/Minnan, Fuzhou, and Teochew kin — roughly 75M in China and Taiwan, plus the largest overseas-Chinese language network: Singapore, Malaysia, the Philippines, Indonesia.",
+    economy: "A mountainous coast with little farmland, which is why the economy was always ships and emigrants: oolong tea, maritime trade, and remittances — a Chinese Phoenicia whose real territory is its diaspora.",
+    capital: "Fuzhou, with Amoy (Xiamen) as the trading port.",
+    alignment: "Maritime Southeast Asia — and in this counterfactual, the natural union is with Taiwan across the strait."
+  },
+  xiang: {
+    name: "Hunan", sub: "Xiang republic",
+    precedent: "The one Mao proposed. In September 1920, a 26-year-old Mao Zedong argued in Changsha's press for an independent Republic of Hunan, urging that China dissolve into twenty-seven sovereign states. Hunan then delivered the federalist movement's high-water mark: the era's only provincial constitution actually put into operation (approved by referendum December 1921, promulgated January 1922 under Zhao Hengti). Mao reversed himself, and the Northern Expedition he joined buried federalism by 1928.",
+    composition: "Xiang speakers, roughly 37M today, in the river valleys; Miao, Tujia, and Dong peoples in the western hills.",
+    economy: "The rice surplus of the middle Yangtze, tea, and Xikuangshan's antimony — for decades the world's dominant source. A solid agrarian-mining middle power.",
+    capital: "Changsha.",
+    alignment: "The soldier state: Hunanese armies and Hunanese politics dominated modern China out of all proportion — Zeng Guofan's Xiang Army through Mao himself. Independent, it exports generals instead."
+  },
+  jin: {
+    name: "Jin", sub: "Shanxi under Yan Xishan",
+    precedent: "Not a declared independence movement — something quieter and more complete. Yan Xishan dominated Shanxi from 1911 to 1949, nearly the entire Republican era (minus a 1930–31 exile and the Japanese occupation of Taiyuan), as the self-styled \"Model Province\": its own arsenal at Taiyuan, its own banks and currency, and the narrow-gauge Tongpu railway — folklore says the odd gauge kept other warlords' troop trains out, though the documented rationale was cost. Either way, the most fully realized de facto separate jurisdiction inside the Han core.",
+    composition: "Jin speakers — roughly 47M today across Shanxi and its borderlands; since the 1980s many linguists class Jin as a top-level Sinitic language, not a Mandarin dialect, because it keeps the entering tone Mandarin lost. Heir to the Shanxi piaohao draft-bank merchants who ran Qing-era finance.",
+    economy: "Coal — Shanxi sits on one of the largest coalfields on the planet — plus the Taiyuan arsenal's heavy industry and the piaohao banking tradition.",
+    capital: "Taiyuan.",
+    alignment: "A Prussia of the loess plateau: militarized, protectionist, energy-exporting, allied to whoever buys the coal."
+  },
+  hakka: {
+    name: "Hakka", sub: "the landless nation",
+    precedent: "The most spectacular state precedent on this page, and no territory to pin it to: the Taiping Heavenly Kingdom (1851–64) was founded and led by Hakka — Hong Xiuquan's state held Nanjing for eleven years, and its suppression was the bloodiest civil war in human history. The Punti–Hakka clan wars of the 1850s–60s show the same national energy turned local.",
+    composition: "Roughly 44M Hakka speakers scattered across the highlands of Guangdong, Fujian, Jiangxi, and Taiwan — \"guest families\" everywhere, majority almost nowhere. That's why this entry has no polygon on the map.",
+    economy: "Hill-country farming at home; the real Hakka economy is the diaspora and its extraordinary leadership yield — Hong Xiuquan, Zhu De, Lee Kuan Yew, and Lee Teng-hui were Hakka; Deng Xiaoping reportedly of Hakka descent.",
+    capital: "None — Meizhou is the cultural heartland, but the nation is the network.",
+    alignment: "The test case that breaks nation-state logic: a nation that would have needed an Israel-style gathering to get a state at all."
+  },
   guangxi: {
     name: "Guangxi", sub: "Zhuang nation",
     precedent: "The weakest 1920s-era case on this map — no warlord-era independence movement — but the deepest-rooted historically: Nong Zhigao's sequence of short-lived kingdoms (Dali, 1042; Nantian, 1048; Dananguo, 1052) briefly asserted Zhuang/Tai statehood against the Song before being crushed in 1052–53. The Zhuang are linguistically Tai-Kadai — kin to Thai and Lao, not to Chinese.",
@@ -298,23 +392,33 @@ var DATA = {
     alignment: "Linguistic and cultural kinship with the Tai world (Thailand, Laos) and proximity to Vietnam suggest a Southeast Asian rather than Sinic orientation — closer in shape to Laos than to any Chinese province."
   }
 };
-var ORDER = ["mongolia","xinjiang","tibet","manchuria","xibei","guangxi"];
+var GROUPS = [
+  { label: "Ethnic periphery — solid", keys: ["mongolia","xinjiang","tibet","manchuria","xibei","guangxi"] },
+  { label: "Sinitic core — dashed", keys: ["yue","wu","min","xiang","jin","hakka"] }
+];
 
 (function(){
   var legend = document.getElementById('legend');
   var detail = document.getElementById('detail');
-  var paths = {};
+  var paths = {}, labels = {};
   [].slice.call(document.querySelectorAll('.region')).forEach(function(p){ paths[p.getAttribute('data-key')] = p; });
+  [].slice.call(document.querySelectorAll('.lbl')).forEach(function(t){ labels[t.getAttribute('data-key')] = t; });
 
-  ORDER.forEach(function(key){
-    var d = DATA[key];
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.setAttribute('aria-pressed', 'false');
-    btn.setAttribute('data-key', key);
-    btn.innerHTML = '<span class="nm">' + d.name + '</span><span class="yr">' + d.sub + '</span>';
-    btn.addEventListener('click', function(){ select(key); });
-    legend.appendChild(btn);
+  GROUPS.forEach(function(g){
+    var h = document.createElement('div');
+    h.className = 'grp';
+    h.textContent = g.label;
+    legend.appendChild(h);
+    g.keys.forEach(function(key){
+      var d = DATA[key];
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.setAttribute('aria-pressed', 'false');
+      btn.setAttribute('data-key', key);
+      btn.innerHTML = '<span class="nm">' + d.name + '</span><span class="yr">' + d.sub + '</span>';
+      btn.addEventListener('click', function(){ select(key); });
+      legend.appendChild(btn);
+    });
   });
 
   Object.keys(paths).forEach(function(key){
@@ -324,6 +428,7 @@ var ORDER = ["mongolia","xinjiang","tibet","manchuria","xibei","guangxi"];
   function select(key){
     var d = DATA[key];
     Object.keys(paths).forEach(function(k){ paths[k].classList.toggle('on', k === key); });
+    Object.keys(labels).forEach(function(k){ labels[k].classList.toggle('on', k === key); });
     [].slice.call(legend.querySelectorAll('button')).forEach(function(b){
       b.setAttribute('aria-pressed', String(b.getAttribute('data-key') === key));
     });
